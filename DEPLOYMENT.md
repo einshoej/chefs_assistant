@@ -1,5 +1,9 @@
 # Deployment Guide for Chef's Assistant
 
+🎉 **Successfully Deployed**: [https://chefsassistant.streamlit.app/](https://chefsassistant.streamlit.app/)
+
+**GitHub Repository**: [https://github.com/einshoej/chefs_assistant](https://github.com/einshoej/chefs_assistant)
+
 ## Deploying to Streamlit Community Cloud
 
 ### Prerequisites
@@ -23,7 +27,7 @@ This repository is already configured for Streamlit deployment with:
 3. Connect your GitHub account if not already connected
 4. Select deployment method: **"From existing repo"**
 5. Fill in the deployment form:
-   - Repository: `einshoej/chefs_assistant` (or your fork)
+   - Repository: `einshoej/chefs_assistant`
    - Branch: `main`
    - Main file path: `main.py`
    - App URL (optional): Choose a custom subdomain
@@ -42,7 +46,7 @@ After deployment, you need to configure secrets in the Streamlit Cloud dashboard
 client_id = "your-google-oauth-client-id"
 client_secret = "your-google-oauth-client-secret"
 cookie_secret = "your-random-32-byte-cookie-secret"
-redirect_uri = "https://your-app.streamlit.app/oauth2callback"
+redirect_uri = "https://chefsassistant.streamlit.app/oauth2callback"
 
 # Optional: AnyList Credentials (if using)
 [anylist]
@@ -61,8 +65,8 @@ client_secret = "your-google-drive-client-secret"
 2. Navigate to **APIs & Services** → **Credentials**
 3. Click on your OAuth 2.0 Client ID
 4. Add your Streamlit app URL to **Authorized redirect URIs**:
-   - `https://your-app.streamlit.app/oauth2callback`
-   - `https://your-app.streamlit.app/`
+   - `https://chefsassistant.streamlit.app/oauth2callback`
+   - `https://chefsassistant.streamlit.app/`
 5. Save the changes
 
 ### Step 5: Optional Features

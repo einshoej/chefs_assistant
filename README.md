@@ -1,5 +1,7 @@
 # Chef's Assistant
 
+🔗 **Live App**: [https://chefsassistant.streamlit.app/](https://chefsassistant.streamlit.app/)
+
 A Streamlit-based recipe management and meal planning application with AnyList integration for seamless recipe importing and organization.
 
 ## 🚀 Quick Start

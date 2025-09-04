@@ -1,5 +1,7 @@
 # IMPORTANT: Google Cloud Console Setup Required
 
+🔗 **Live App**: [https://chefsassistant.streamlit.app/](https://chefsassistant.streamlit.app/)
+
 ## The Issue
 You're getting a "redirect_uri_mismatch" error because the redirect URIs in Google Cloud Console don't match what the app is using.
 
@@ -12,11 +14,17 @@ You're getting a "redirect_uri_mismatch" error because the redirect URIs in Goog
 4. Click on your OAuth 2.0 Client ID (the one with ID: `473098721962-ie7c5dq6n0lpkin2at7dqgs83lms52vt.apps.googleusercontent.com`)
 
 ### Step 2: Check/Update Authorized Redirect URIs
-You need EXACTLY these two URIs (case-sensitive, must match exactly):
 
+#### For Local Development:
 ```
 http://localhost:8501/oauth2callback
 http://localhost:8501/drive_oauth2callback
+```
+
+#### For Production (Streamlit Cloud):
+```
+https://chefsassistant.streamlit.app/oauth2callback
+https://chefsassistant.streamlit.app/drive_oauth2callback
 ```
 
 **IMPORTANT**: 
@@ -54,12 +62,14 @@ Click "Save" at the bottom of the OAuth client configuration page.
    - Authorize when prompted
    - Should see "✅ Google Drive connected"
 
-## For Production Deployment
+## Production Deployment (Already Live)
 
-When you deploy to Streamlit Cloud or another domain, you'll need to add these URIs:
+The app is deployed at https://chefsassistant.streamlit.app/
+
+Make sure these URIs are added in Google Cloud Console:
 ```
-https://yourdomain.streamlit.app/oauth2callback
-https://yourdomain.streamlit.app/drive_oauth2callback
+https://chefsassistant.streamlit.app/oauth2callback
+https://chefsassistant.streamlit.app/drive_oauth2callback
 ```
 
 ## Current Configuration
