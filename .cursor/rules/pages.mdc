@@ -1,0 +1,24 @@
+---
+description: General page structure guidelines and development best practices for Streamlit applications
+alwaysApply: false
+---
+**Standard page structure**
+
+Use this structure unless otherwise instructed:
+
+1. Page heading on the top
+2. Filters below page heading
+3. Metrics if applicable
+4. Tabs if applicable
+
+**Creating pages**
+
+1. Never add streamlit page config unless specifically instructed.
+2. Always use absolute imports, never relative imports.
+
+
+**Headers, text and captions**
+
+1. Use streamlit native text formating when possible: st.title, st.header, and st.subheader for different levels of headings. st.markdown for regular text and st.caption for explanatory text.
+2. Never use in-line icons with markdown, unless instructed specifically.
+3. Use st.divider() instead of a st.markdown() created horizontal line.

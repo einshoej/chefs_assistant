@@ -1,0 +1,22 @@
+---
+description: Table display guidelines including data fetching, column configuration, and query presentation standards
+alwaysApply: false
+---
+**Tables**
+
+When fetching data for a table, fetch all data, perhaps with the exception of meta-data and other columns that the user would never need.
+
+Use the `column_order` variable in `st.dataframe` to select both which columns to display and the order of them.
+This process allows the user to show hidden columns, or hide visible ones.
+
+Use `st.column_config` to configure elements like label, help, and format for each column.
+
+For number columns, like NAV (NOK), use `format = "localized"` to display numbers with proper thousand separators and locale formatting.
+
+For percentage columns, use `format = "percent"` to display values as percentages (e.g. "1234.567" will be shown as 123456.70%).
+
+A table should always be accompanied by the query used to fetch the data (unless the data has been manipulated before being shown), by the way of a tab. I.e., `st.tabs(["Table", "Query"])`.
+
+```python
+table_tab, query_tab = st.tabs(["Table", "Query"])
+```

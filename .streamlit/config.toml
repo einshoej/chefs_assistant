@@ -1,0 +1,40 @@
+# Chef's Assistant - Food-themed Color Scheme Configuration
+# Warm, appetizing colors that complement a recipe management app
+
+[theme]
+base = "light"
+
+# Primary color - chef blue
+primaryColor = "#1E3A8A"
+
+# Background colors - clean whites and cream tones
+backgroundColor = "#FEFEFE"
+secondaryBackgroundColor = "#FFF8F3"
+codeBackgroundColor = "#F5F5F0"
+
+# Text colors - rich dark browns for readability
+textColor = "#2F1B14"
+linkColor = "#1D4ED8"
+linkUnderline = true
+
+# Borders and radius - soft, rounded feel
+borderColor = "#E8DDD4"
+dataframeBorderColor = "#D4C4B0"
+baseRadius = "medium"
+buttonRadius = "medium"
+
+# Show subtle borders for better visual structure
+showWidgetBorder = true
+showSidebarBorder = true
+
+# Header background for dataframes - light cream
+dataframeHeaderBackgroundColor = "#FAF7F2"
+
+# Chart colors - warm, food-inspired palette
+chartCategoricalColors = ["#FF6B35", "#F7931E", "#C5282F", "#8B4513", "#228B22", "#4682B4", "#9370DB"]
+
+[theme.sidebar]
+# Slightly different tones for sidebar
+backgroundColor = "#FFF8F3"
+secondaryBackgroundColor = "#F0E6D6"
+primaryColor = "#1E40AF"

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run streamlit run:*)",
+      "Bash(uv:*)",
+      "Bash(python:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(streamlit run:*)",
+      "Bash(pip --version)",
+      "Bash(taskkill:*)",
+      "Bash(find:*)",
+      "Bash(test:*)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "Bash(pip install:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

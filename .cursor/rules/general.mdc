@@ -1,0 +1,85 @@
+---
+alwaysApply: true
+---
+**General rules: ALWAYS APPLY**
+1. Never test your work.
+2. Never create a new streamlit session.
+3. Use streamlit native code and elements, not html
+4. Never create __init__ files.
+
+# Recipe Calendar App - Development Guidelines
+
+## Project Overview
+A Streamlit-based recipe calendar application, named Chef's Assistant, that allows users to browse recipes from a database and organize them into weekly meal plans. The app features a card-based interface for viewing current week meals and an interactive calendar for planning future weeks.
+
+## Tech Stack
+- **Framework**: Streamlit
+- **Data Storage**: JSON files (temporary solution for development/beta)
+- **Authentication**: Local username/password system (beta testing only)
+- **UI Pattern**: Multi-page application with drag-and-drop functionality
+
+## App Architecture
+
+### Page Structure
+- **"This Week"**: Read-only card-based overview of current week's selected recipes
+- **"Next Week"**: Interactive calendar for editing/planning future meals (add/remove/change recipes)
+- **"Browse Recipes"**: Search and filter interface with categories, ingredients, and other filters
+- **"Account Management"**: User settings and authentication management
+
+### Core Features
+- Recipe browsing with advanced filtering (categories, ingredients, etc.)
+- Drag-and-drop or similar UI for assigning recipes to calendar days
+- Edit/remove recipes from calendar after assignment
+- Weekly calendar view for meal planning
+- User authentication with local storage
+
+## Project Structure
+
+```
+/
+├── main.py                          # App entry point
+├── .venv/                          # Virtual environment (not uploaded)
+└── src/                            # All application code
+    ├── data/
+    │   └── users.json              # Temporary user data storage
+    ├── pages/                      # Streamlit pages
+    │   ├── this_week/              # Current week overview page
+    │   ├── next_week/              # Editable calendar page
+    │   ├── browse_recipes/         # Recipe browsing interface
+    │   └── account_management/     # User settings page
+    └── [shared_modules]/           # Shared utilities and components
+```
+
+## Development Guidelines
+
+### File Organization
+- Keep `main.py` minimal - primary entry point only
+- All application code must be in `/src` directory
+- Each Streamlit page gets its own folder in `/src/pages/`
+- Shared functionality goes in `/src` or appropriate subfolders
+- Page folders should use snake_case naming convention
+
+### Code Patterns
+- Separate UI components from business logic
+- Use Streamlit session state for user data and app state
+- Implement proper error handling for JSON file operations
+- Design with future database migration in mind (abstract data access)
+- Follow Streamlit best practices for page navigation and state management
+
+### Data Handling
+- Current: JSON file-based storage (development/beta phase)
+- Plan for future database integration
+- Maintain user session state across page navigation
+- Handle concurrent user access considerations
+
+### UI/UX Considerations
+- Implement intuitive drag-and-drop or selection interface for calendar
+- Design responsive card layouts for recipe display
+- Ensure smooth navigation between pages
+- Maintain consistent styling across all pages
+- Plan for mobile-friendly design patterns
+
+## Beta Phase Considerations
+- Local authentication is temporary - plan for production auth system
+- JSON storage is temporary - design for easy database migration
+- Focus on core functionality validation over performance optimization

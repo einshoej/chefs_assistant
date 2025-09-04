@@ -1,0 +1,9 @@
+{
+  "name": "anylist-bridge",
+  "version": "1.0.0",
+  "description": "Node.js bridge for AnyList API",
+  "main": "anylist_bridge.js",
+  "dependencies": {
+    "anylist": "^0.8.5"
+  }
+}

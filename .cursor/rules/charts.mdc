@@ -1,0 +1,33 @@
+---
+description: Chart visualization guidelines including color schemes, tab structure, and display standards for NBIM applications
+alwaysApply: false
+---
+**Charts**
+
+When displaying a chart in the UI, always include underlying table and query as tabs:
+
+```python
+chart_tab, table_tab, query_tab = st.tabs(["Chart","Table","Query"])
+```
+
+Use NBIM's color scheme described in src.viz_utils.py:
+```python
+{
+    "midnight": "#001538",
+    "accent blue": "#0026FF",
+    "sanddark": "#D65218",
+    "sea": "#4EC2E2",
+    "emerald": "#3DD173",
+    "pink": "#FF75DE",
+    "violet": "#884DF7",
+    "sky": "#F5F2EB",
+    "grey": "#BFC3C9",
+    "sand": "#F4CEA4",
+    "polar": "#C3E9EE",
+    "seadark": "#0A5877",
+    "forrest": "#00755F",
+    "lilac": "#AF9DFF",
+}
+```
+
+Use streamlit subheading and a suitable caption instead of a title in the chart itself.
