@@ -4,8 +4,7 @@ This Week page - Display multiple weeks of recipes with tabs
 
 import streamlit as st
 from src.pages.this_week.recipe_components import (
-    display_recipe_card,
-    display_clear_button
+    display_recipe_card
 )
 from src.pages.this_week.session_manager import WeeklyRecipeManager
 from src.pages.this_week.week_utils import get_relative_week_label
@@ -40,16 +39,6 @@ def display_recipes(recipes: list, week_offset: int) -> None:
             with col2:
                 display_recipe_card(recipe, meal_number, i, week_offset)
 
-
-def handle_clear_action(week_offset: int) -> None:
-    """Handle the clear all recipes action for a specific week
-    
-    Args:
-        week_offset: Week offset to clear
-    """
-    if WeeklyRecipeManager.has_recipes_for_week(week_offset) and display_clear_button():
-        WeeklyRecipeManager.clear_week(week_offset)
-        st.rerun()
 
 
 def display_week_tab(week_offset: int) -> None:
@@ -88,9 +77,15 @@ def display_week_tab(week_offset: int) -> None:
         # Add action buttons
         col1, col2 = st.columns(2)
         with col1:
-            handle_clear_action(week_offset)
+            # Clear button with unique key for this week
+            st.divider()
+            if st.button("🗑️ Clear All Recipes", key=f"clear_recipes_week_{week_offset}", type="secondary"):
+                WeeklyRecipeManager.clear_week(week_offset)
+                st.success("Cleared all recipes!")
+                st.rerun()
         with col2:
             # Refresh button to regenerate random recipes
+            st.divider()
             meals_per_week = st.session_state.get('meals_per_week', 3)
             if st.button(f"🔄 Refresh ({meals_per_week} new recipes)", key=f"refresh_week_{week_offset}", type="secondary"):
                 WeeklyRecipeManager.clear_week(week_offset)
