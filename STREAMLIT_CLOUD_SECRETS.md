@@ -105,11 +105,6 @@ Then replace the `cookie_secret` value in the configuration above.
 
 ## Additional Features
 
-### AnyList Integration
-The app has Node.js support installed for AnyList integration. To use it:
-1. Add your AnyList credentials to the secrets (optional)
-2. Navigate to Settings → AnyList in the app
-
 ### Google Drive Storage
 To enable Google Drive storage for recipes:
 1. The `[google_drive]` section is already included above

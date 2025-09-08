@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 def initialize_session_state():
     """Initialize session state for recipes if not already set"""
     # Initialize recipe storage in session state
-    if 'anylist_recipes' not in st.session_state:
-        st.session_state.anylist_recipes = []
     if 'local_recipes' not in st.session_state:
         st.session_state.local_recipes = []
     if 'default_recipes' not in st.session_state:
@@ -65,10 +63,7 @@ def load_recipes_from_drive():
             # Load recipes
             recipes_data = storage.load_recipes()
             if recipes_data:
-                st.session_state.anylist_recipes = recipes_data.get('anylist_recipes', [])
                 st.session_state.local_recipes = recipes_data.get('local_recipes', [])
-                st.session_state.last_anylist_sync = recipes_data.get('last_sync')
-                logger.info(f"Loaded {len(st.session_state.anylist_recipes)} AnyList recipes from Drive")
                 logger.info(f"Loaded {len(st.session_state.local_recipes)} local recipes from Drive")
             
             # Load meal plans
@@ -98,9 +93,7 @@ def save_recipes_to_drive():
         if storage:
             # Prepare recipes data
             recipes_data = {
-                'anylist_recipes': st.session_state.get('anylist_recipes', []),
-                'local_recipes': st.session_state.get('local_recipes', []),
-                'last_sync': st.session_state.get('last_anylist_sync')
+                'local_recipes': st.session_state.get('local_recipes', [])
             }
             
             # Save recipes
@@ -141,13 +134,9 @@ def get_all_recipes():
     """Get all available recipes from session state"""
     all_recipes = []
     
-    # Add default recipes first (exported AnyList recipes)
+    # Add default recipes first
     if 'default_recipes' in st.session_state:
         all_recipes.extend(st.session_state.default_recipes)
-    
-    # Add AnyList recipes if available (fresh synced recipes)
-    if 'anylist_recipes' in st.session_state:
-        all_recipes.extend(st.session_state.anylist_recipes)
     
     # Add local recipes if available
     if 'local_recipes' in st.session_state:
@@ -160,7 +149,6 @@ def get_recipe_counts():
     """Get counts of recipes from different sources"""
     counts = {
         'default': len(st.session_state.get('default_recipes', [])),
-        'anylist': len(st.session_state.get('anylist_recipes', [])),
         'local': len(st.session_state.get('local_recipes', [])),
         'weekly': len(st.session_state.get('weekly_recipes', [])),
         'total': len(get_all_recipes())

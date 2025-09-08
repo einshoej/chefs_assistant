@@ -213,7 +213,7 @@ def display_recipe_details(recipe, idx):
         
         # Show message if no detailed data is available
         if not prep_steps and not ingredients:
-            st.info("📋 No detailed recipe information available. This may be because the recipe was imported without full details or needs to be re-fetched from AnyList.")
+            st.info("📋 No detailed recipe information available. This recipe may need additional details added.")
 
 
 def display_ingredient(ingredient):

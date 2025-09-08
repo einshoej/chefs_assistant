@@ -2,14 +2,13 @@
 
 🔗 **Live App**: [https://chefsassistant.streamlit.app/](https://chefsassistant.streamlit.app/)
 
-A Streamlit-based recipe management and meal planning application with AnyList integration for seamless recipe importing and organization.
+A Streamlit-based recipe management and meal planning application for organizing recipes and planning meals.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8+
-- Node.js (for AnyList integration)
 - Google Cloud Console account (for authentication)
 
 ### 1. Install Dependencies
@@ -40,20 +39,7 @@ redirect_uri = "http://localhost:8501/oauth2callback"
 
 2. Generate a secure cookie secret (32 bytes) for session management
 
-### 3. Set Up AnyList Integration (Optional)
-
-For recipe importing from AnyList:
-
-```powershell
-# Windows users:
-powershell src/scripts/setup/setup_nodejs_anylist.ps1
-
-# Or manually:
-cd src/anylist_integration/nodejs
-npm install
-```
-
-### 4. Run the Application
+### 3. Run the Application
 
 ```bash
 streamlit run main.py
@@ -64,7 +50,6 @@ The app will open at `http://localhost:8501`
 ## 📋 Features
 
 - **Google Authentication**: Secure login with Google accounts using Streamlit's native auth
-- **AnyList Integration**: Import and sync recipes from your AnyList account
 - **Weekly Meal Planning**: Organize recipes into a weekly calendar view
 - **Recipe Browser**: Search and filter through your recipe collection
 - **Session Storage**: Fast, in-memory storage with optional Google Drive persistence
@@ -81,9 +66,6 @@ Enable cloud persistence for your recipes and meal plans:
 
 See [GOOGLE_DRIVE_STORAGE_SETUP.md](docs/GOOGLE_DRIVE_STORAGE_SETUP.md) for detailed instructions.
 
-### AnyList Credentials
-
-If using AnyList integration, you'll be prompted to enter your AnyList credentials through the app's settings page.
 
 ## 📁 Project Structure
 
@@ -100,15 +82,10 @@ chefs_assistant/
 │   ├── QUICK_SETUP_GUIDE.md
 │   ├── STREAMLIT_NATIVE_AUTH_SETUP.md
 │   ├── GOOGLE_DRIVE_STORAGE_SETUP.md
-│   └── ANYLIST_INTEGRATION.md
 └── src/
-    ├── anylist_integration/          # AnyList API client
-    │   ├── anylist_official_client.py
-    │   └── nodejs/                   # Node.js bridge
     ├── pages/                        # Streamlit pages
     │   ├── this_week/               # Weekly meal planning
     │   ├── browse_recipes/          # Recipe browser
-    │   ├── anylist_settings/        # AnyList configuration
     │   └── profile/                 # User profile
     ├── models/                       # Data models
     ├── utils/                        # Utilities
@@ -132,14 +109,6 @@ chefs_assistant/
 2. Ensure redirect URI matches exactly in Google Console and secrets.toml
 3. Verify you're using the correct port (default: 8501)
 
-### AnyList Integration Issues
-
-#### Node.js Not Found
-- Install Node.js from [nodejs.org](https://nodejs.org/)
-- Run the setup script: `powershell src/scripts/setup/setup_nodejs_anylist.ps1`
-
-#### AnyList API Errors
-- Verify your AnyList credentials in the app settings
 - Check that the Node.js dependencies are installed in `src/anylist_integration/nodejs/`
 
 ## 📚 Documentation
@@ -148,14 +117,13 @@ For detailed setup and usage instructions:
 - [Quick Setup Guide](docs/QUICK_SETUP_GUIDE.md) - Get started quickly
 - [Authentication Setup](docs/STREAMLIT_NATIVE_AUTH_SETUP.md) - Complete auth configuration
 - [Google Drive Storage](docs/GOOGLE_DRIVE_STORAGE_SETUP.md) - Cloud persistence setup
-- [AnyList Integration](docs/ANYLIST_INTEGRATION.md) - Recipe import configuration
 - [Implementation Status](docs/IMPLEMENTATION_STATUS.md) - Feature completion status
 
 ## 🔒 Security Notes
 
 - Never commit `.streamlit/secrets.toml` to version control
 - Use HTTPS in production environments
-- Keep your Google OAuth and AnyList credentials secure
+- Keep your Google OAuth credentials secure
 - Session cookies expire after 30 days for security
 
 ## 💻 Development
@@ -163,9 +131,6 @@ For detailed setup and usage instructions:
 ### Running Tests
 
 ```bash
-# Test AnyList integration
-python src/scripts/tests/test_anylist_recipes_fetch.py
-
 # Test Google Drive setup
 python src/scripts/tests/test_google_drive_setup.py
 ```

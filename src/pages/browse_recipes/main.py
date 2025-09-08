@@ -51,9 +51,8 @@ def view_all_recipes():
     # Search and filter section
     st.subheader("Find Recipes")
     
-    # Check if we have AnyList recipes
-    has_anylist = 'anylist_recipes' in st.session_state and st.session_state.anylist_recipes
-    has_any_recipes = has_anylist or ('local_recipes' in st.session_state and st.session_state.local_recipes)
+    # Check if we have recipes
+    has_any_recipes = 'local_recipes' in st.session_state and st.session_state.local_recipes
     
     col1, col2, col3 = st.columns([2, 1, 1])
     
@@ -63,7 +62,7 @@ def view_all_recipes():
             placeholder="Enter recipe name or ingredient...", 
             key="search",
             disabled=not has_any_recipes,
-            help="Search through your recipes" if has_any_recipes else "Connect AnyList or add local recipes to enable search",
+            help="Search through your recipes" if has_any_recipes else "Add local recipes to enable search",
             on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on search
         )
     
@@ -85,7 +84,7 @@ def view_all_recipes():
     with col3:
         source_filter = st.selectbox(
             "Source", 
-            ["All", "AnyList", "Local"], 
+            ["All", "Local"], 
             key="source",
             disabled=not has_any_recipes,
             help="Filter by recipe source",
@@ -108,7 +107,7 @@ def display_recipes(search_term: str = "", categories: list = None, source: str 
     all_recipes = get_all_recipes()
     
     if not all_recipes:
-        st.info("📚 No recipes available. Connect your AnyList account or add local recipes to get started.")
+        st.info("📚 No recipes available. Add local recipes to get started.")
         return
     
     # Filter recipes

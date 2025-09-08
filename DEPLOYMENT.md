@@ -49,11 +49,6 @@ client_secret = "your-google-oauth-client-secret"
 cookie_secret = "your-random-32-byte-cookie-secret"
 redirect_uri = "https://chefsassistant.streamlit.app/oauth2callback"
 
-# Optional: AnyList Credentials (if using)
-[anylist]
-email = "your-anylist-email@example.com"
-password = "your-anylist-password"
-
 # Optional: Google Drive Integration
 [google_drive]
 client_id = "your-google-drive-client-id"
@@ -80,13 +75,6 @@ If you want to use Google Drive for persistent storage:
 2. Add Drive API scopes to your OAuth consent screen
 3. Configure the `[google_drive]` section in secrets
 
-#### AnyList Integration
-
-The app now includes support for AnyList on Streamlit Community Cloud:
-
-1. **Node.js Support**: The `packages.txt` file includes Node.js and npm, which will be automatically installed on deployment
-2. **Automatic Setup**: The app will automatically install Node.js dependencies on first run
-3. **Cross-Platform**: The code now detects the platform and adjusts subprocess calls accordingly
 
 If AnyList features still don't work after deployment:
 - Check the app logs for any Node.js installation errors

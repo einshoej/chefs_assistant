@@ -37,11 +37,6 @@ src/data/users.json
 *.pid
 nul
 
-# Node.js (for AnyList integration)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Temporary files
 *.tmp.*

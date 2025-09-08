@@ -1,5 +1,5 @@
 """
-Default recipes module - loads exported AnyList recipes as default recipes for the app
+Default recipes module - loads default recipes for the app
 """
 
 import json
