@@ -44,7 +44,7 @@ def load_default_recipes() -> List[Dict]:
         # Add metadata to each recipe to indicate it's a default recipe
         for recipe in recipes:
             recipe['is_default_recipe'] = True
-            recipe['source'] = 'default_export'
+            recipe['recipe_type'] = 'default_export'
         
         return recipes
         

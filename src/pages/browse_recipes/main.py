@@ -25,6 +25,19 @@ def get_all_categories(recipes):
     return sorted([cat for cat in categories if cat.strip()])
 
 
+def get_all_sources(recipes):
+    """Extract all unique sources from recipes"""
+    sources = set()
+    
+    for recipe in recipes:
+        source = recipe.get('source', '').strip()
+        if source:  # Only add non-empty sources
+            sources.add(source)
+    
+    # Return sorted list
+    return sorted(list(sources))
+
+
 def view_all_recipes():
     """Display all recipes with search and filter options"""
     st.header("View All Recipes")
@@ -71,11 +84,15 @@ def view_all_recipes():
         )
     
     with col3:
-        source_filter = st.selectbox(
-            "Source", 
-            ["All", "Local", "Default"], 
-            key="source",
-            help="Filter by recipe source",
+        # Get available sources from all recipes
+        available_sources = get_all_sources(all_recipes)
+        
+        selected_sources = st.multiselect(
+            "Sources", 
+            options=available_sources,
+            default=[],
+            key="sources",
+            help="Select sources to filter by (no selection shows all)" if has_any_recipes else "No recipes available to filter",
             on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on filter change
         )
     
@@ -86,10 +103,10 @@ def view_all_recipes():
     
     
     # Display recipes
-    display_recipes(search_term if has_any_recipes else "", selected_categories, source_filter)
+    display_recipes(search_term if has_any_recipes else "", selected_categories, selected_sources)
 
 
-def display_recipes(search_term: str = "", categories: list = None, source: str = "All"):
+def display_recipes(search_term: str = "", categories: list = None, sources: list = None):
     """Display filtered recipes with pagination"""
     
     # Get all available recipes
@@ -101,7 +118,8 @@ def display_recipes(search_term: str = "", categories: list = None, source: str 
     
     # Filter recipes
     categories = categories or []
-    filtered_recipes = filter_recipes(all_recipes, search_term, categories, source)
+    sources = sources or []
+    filtered_recipes = filter_recipes(all_recipes, search_term, categories, sources)
     
     if not filtered_recipes:
         st.warning("No recipes found matching your filters.")

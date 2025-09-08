@@ -3,7 +3,7 @@ Recipe filtering functionality for browse recipes page
 """
 
 
-def filter_recipes(recipes, search_term, categories, source):
+def filter_recipes(recipes, search_term, categories, sources):
     """Filter recipes based on search criteria"""
     filtered = recipes
     
@@ -55,14 +55,14 @@ def filter_recipes(recipes, search_term, categories, source):
         
         filtered = [r for r in filtered if matches_categories(r)]
     
-    # Filter by source
-    if source != "All":
-        if source == "Default":
-            # Match recipes from default export
-            filtered = [r for r in filtered if r.get('source') == 'default_export']
-        else:
-            # Match local recipes (or fallback to Local for older data)
-            filtered = [r for r in filtered if r.get('source', 'Local') == source]
+    # Filter by sources (only apply filter if sources are selected)
+    if sources:
+        def matches_sources(r):
+            recipe_source = r.get('source', '').strip()
+            # Check if recipe source matches any of the selected sources
+            return recipe_source in sources
+        
+        filtered = [r for r in filtered if matches_sources(r)]
     
     # Sort by rating (descending - highest first, unrated last)
     filtered = sorted(filtered, key=lambda r: r.get('rating', 0), reverse=True)
