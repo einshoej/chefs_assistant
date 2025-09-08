@@ -3,6 +3,19 @@ Profile page - Display user profile information
 """
 
 import streamlit as st
+from src.utils.settings import save_user_settings_to_drive
+
+
+def on_meals_per_week_change():
+    """Callback function triggered when meals_per_week slider changes"""
+    try:
+        success = save_user_settings_to_drive()
+        if success:
+            st.toast("✅ Settings saved to Google Drive!", icon="✅")
+        else:
+            st.toast("⚠️ Could not save to Google Drive", icon="⚠️")
+    except Exception as e:
+        st.toast(f"❌ Error saving settings: {str(e)}", icon="❌")
 
 
 def profile():
@@ -32,12 +45,10 @@ def profile():
             min_value=1,
             max_value=7,
             value=st.session_state.meals_per_week,
-            help="This setting helps us customize your meal planning experience"
+            help="This setting helps us customize your meal planning experience",
+            on_change=on_meals_per_week_change,
+            key="meals_per_week"
         )
-        
-        if meals_per_week != st.session_state.meals_per_week:
-            st.session_state.meals_per_week = meals_per_week
-            st.success(f"✅ Preference updated: {meals_per_week} meals per week")
     
     with tab2:
         st.header("Personal Information")

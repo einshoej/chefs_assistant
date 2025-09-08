@@ -18,6 +18,7 @@ Architecture:
 
 import streamlit as st
 from src.utils.auth import is_user_logged_in, show_login_page
+from src.utils.settings import initialize_user_settings
 from src.pages.this_week.main import main as this_week
 from src.pages.browse_recipes.main import view_all_recipes
 from src.pages.profile.main import profile
@@ -35,6 +36,9 @@ def main():
     
     # Check if user is logged in
     if is_user_logged_in():
+        # Initialize user settings (load from Google Drive if available)
+        initialize_user_settings()
+        
         # Set up navigation pages with hierarchical structure
         pages = [            
                 st.Page(this_week, title="This Week", icon=":material/room_service:", url_path="this-week"),            

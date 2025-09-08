@@ -9,14 +9,10 @@ from src.pages.browse_recipes.recipe_filters import filter_recipes
 
 
 def get_all_categories(recipes):
-    """Extract all unique categories from recipes"""
+    """Extract all unique categories from recipes (collections only)"""
     categories = set()
     
     for recipe in recipes:
-        # Get from tags
-        for tag in recipe.get('tags', []):
-            categories.add(tag)
-        
         # Get from collections - handle both old format (strings) and new format (objects)
         collections = recipe.get('collections', [])
         for collection in collections:
@@ -24,11 +20,6 @@ def get_all_categories(recipes):
                 categories.add(collection['name'])
             else:
                 categories.add(collection)
-        
-        # Get from category field
-        category = recipe.get('category', '')
-        if category:
-            categories.add(category)
     
     # Return sorted list, excluding empty strings
     return sorted([cat for cat in categories if cat.strip()])
@@ -84,7 +75,7 @@ def view_all_recipes():
     with col3:
         source_filter = st.selectbox(
             "Source", 
-            ["All", "Local"], 
+            ["All", "Local", "Default"], 
             key="source",
             disabled=not has_any_recipes,
             help="Filter by recipe source",

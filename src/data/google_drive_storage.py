@@ -33,6 +33,7 @@ class GoogleDriveRecipeStorage:
         self.recipes_file = "recipes.json"
         self.weekly_recipes_file = "weekly_recipes.json"
         self.meal_plans_file = "meal_plans.json"
+        self.user_settings_file = "user_settings.json"
         
         if access_token and not service:
             self._initialize_service(access_token)
@@ -560,6 +561,147 @@ class GoogleDriveRecipeStorage:
         except Exception as e:
             logger.error(f"Error deleting app data from Google Drive: {e}")
             return False
+    
+    def save_user_settings(self, settings_data: Dict) -> bool:
+        """
+        Save user settings to Google Drive
+        
+        Args:
+            settings_data: Dictionary containing user settings
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.service:
+            logger.error("Google Drive service not initialized")
+            return False
+        
+        try:
+            folder_id = self.get_or_create_app_folder()
+            if not folder_id:
+                return False
+            
+            # Add timestamp
+            settings_data['last_updated'] = datetime.now().isoformat()
+            
+            # Convert to JSON
+            json_data = json.dumps(settings_data, indent=2, ensure_ascii=False)
+            
+            # Check if file exists
+            query = f"name='{self.user_settings_file}' and '{folder_id}' in parents and trashed=false"
+            results = self.service.files().list(
+                q=query,
+                spaces='drive',
+                fields='files(id)',
+                pageSize=1
+            ).execute()
+            
+            files = results.get('files', [])
+            
+            # Prepare media upload
+            media = MediaIoBaseUpload(
+                io.BytesIO(json_data.encode('utf-8')),
+                mimetype='application/json',
+                resumable=True
+            )
+            
+            if files:
+                # Update existing file
+                file_id = files[0]['id']
+                file_metadata = {
+                    'name': self.user_settings_file,
+                    'parents': [folder_id]
+                }
+                
+                updated_file = self.service.files().update(
+                    fileId=file_id,
+                    body=file_metadata,
+                    media_body=media,
+                    fields='id'
+                ).execute()
+                
+                logger.info(f"Updated user settings file: {updated_file.get('id')}")
+            else:
+                # Create new file
+                file_metadata = {
+                    'name': self.user_settings_file,
+                    'parents': [folder_id]
+                }
+                
+                created_file = self.service.files().create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields='id'
+                ).execute()
+                
+                logger.info(f"Created user settings file: {created_file.get('id')}")
+            
+            return True
+            
+        except HttpError as e:
+            logger.error(f"HTTP error saving user settings to Google Drive: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error saving user settings to Google Drive: {e}")
+            return False
+    
+    def load_user_settings(self) -> Optional[Dict]:
+        """
+        Load user settings from Google Drive
+        
+        Returns:
+            Dictionary with user settings if found, None if not found or error
+        """
+        if not self.service:
+            logger.error("Google Drive service not initialized")
+            return None
+        
+        try:
+            folder_id = self.get_or_create_app_folder()
+            if not folder_id:
+                return None
+            
+            # Find the user settings file
+            query = f"name='{self.user_settings_file}' and '{folder_id}' in parents and trashed=false"
+            results = self.service.files().list(
+                q=query,
+                spaces='drive',
+                fields='files(id)',
+                pageSize=1
+            ).execute()
+            
+            files = results.get('files', [])
+            if not files:
+                logger.info("No user settings file found in Google Drive")
+                return None
+            
+            # Download the file
+            file_id = files[0]['id']
+            request = self.service.files().get_media(fileId=file_id)
+            
+            file_io = io.BytesIO()
+            downloader = MediaIoBaseDownload(file_io, request)
+            
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+            
+            # Parse JSON content
+            file_content = file_io.getvalue().decode('utf-8')
+            settings_data = json.loads(file_content)
+            
+            logger.info("Loaded user settings from Google Drive")
+            return settings_data
+            
+        except HttpError as e:
+            logger.error(f"HTTP error loading user settings from Google Drive: {e}")
+            return None
+        except json.JSONDecodeError as e:
+            logger.error(f"Error parsing user settings JSON: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error loading user settings from Google Drive: {e}")
+            return None
 
 
 # Helper function to get storage instance from Streamlit session

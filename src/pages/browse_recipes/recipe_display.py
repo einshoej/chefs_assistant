@@ -91,11 +91,9 @@ def display_recipe_card(recipe, idx):
     cook_time = recipe.get('cook_time', 0) or 0
     total_minutes = (prep_time + cook_time) // 60 if (prep_time + cook_time) > 0 else 0
     
-    # Get categories
+    # Get categories from collections only
     collections = recipe.get('collections', [])
     collection_names = [c['name'] if isinstance(c, dict) else c for c in collections]
-    tags = recipe.get('tags', [])
-    all_tags = collection_names + tags
     
     # Build rating stars
     rating = recipe.get('rating', 0)
@@ -133,8 +131,8 @@ def display_recipe_card(recipe, idx):
             badges_markdown += f":blue-badge[🕐 {total_minutes} min] "
         
         # Add category badge
-        for tag in all_tags:
-            badges_markdown += f":gray-badge[🏷️ {tag}] "
+        for category in collection_names:
+            badges_markdown += f":gray-badge[🏷️ {category}] "
         
         # Display badges
         if badges_markdown:

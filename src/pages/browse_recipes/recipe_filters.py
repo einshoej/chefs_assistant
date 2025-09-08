@@ -30,12 +30,7 @@ def filter_recipes(recipes, search_term, categories, source):
                     search_filtered.append(r)
                     continue
             
-            # Check tags
-            if any(search_lower in tag.lower() for tag in r.get('tags', [])):
-                search_filtered.append(r)
-                continue
-            
-            # Check collections - handle both old format (strings) and new format (objects)
+            # Check collections for search terms
             collections = r.get('collections', [])
             collection_names = [c['name'] if isinstance(c, dict) else c for c in collections]
             if any(search_lower in coll.lower() for coll in collection_names):
@@ -49,28 +44,25 @@ def filter_recipes(recipes, search_term, categories, source):
             # Get all category names from recipe in lowercase for comparison
             recipe_categories = set()
             
-            # Add from tags
-            recipe_categories.update(t.lower() for t in r.get('tags', []))
-            
             # Add from collections - handle both old format (strings) and new format (objects)
             collections = r.get('collections', [])
             collection_names = [c['name'] if isinstance(c, dict) else c for c in collections]
             recipe_categories.update(c.lower() for c in collection_names)
             
-            # Add from category field
-            category_field = r.get('category', '')
-            if category_field:
-                recipe_categories.add(category_field.lower())
-            
-            # Check if ALL selected categories match recipe categories (AND logic)
+            # Check if ANY selected category matches recipe categories (OR logic)
             selected_lower = set(cat.lower() for cat in categories)
-            return selected_lower.issubset(recipe_categories)
+            return bool(selected_lower.intersection(recipe_categories))
         
         filtered = [r for r in filtered if matches_categories(r)]
     
     # Filter by source
     if source != "All":
-        filtered = [r for r in filtered if r.get('source', 'Local') == source]
+        if source == "Default":
+            # Match recipes from default export
+            filtered = [r for r in filtered if r.get('source') == 'default_export']
+        else:
+            # Match local recipes (or fallback to Local for older data)
+            filtered = [r for r in filtered if r.get('source', 'Local') == source]
     
     # Sort by rating (descending - highest first, unrated last)
     filtered = sorted(filtered, key=lambda r: r.get('rating', 0), reverse=True)
