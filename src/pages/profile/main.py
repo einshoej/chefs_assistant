@@ -6,38 +6,77 @@ import streamlit as st
 
 
 def profile():
-    """Display user profile information"""
-    _, col2, _ = st.columns([1, 2, 1])
+    """Display user profile information with tabs"""
+    st.title("👤 Profile")
     
-    with col2:
-        st.markdown("### 👤 User Profile")
+    # Initialize meals per week preference if not exists
+    if "meals_per_week" not in st.session_state:
+        st.session_state.meals_per_week = 3
+    
+    # Create tabs
+    tab1, tab2 = st.tabs(["📋 Subscription", "👤 Personal Information"])
+    
+    with tab1:
+        st.header("Subscription Details")
         
-        # Display user avatar if available
-        if hasattr(st.user, 'picture') and st.user.picture:
-            st.markdown(f"""
-            <div style="text-align: center; margin-bottom: 20px;">
-                <img src="{st.user.picture}" style="border-radius: 50%; width: 100px; height: 100px;">
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # Display user information
-        st.info(f"**Name:** {getattr(st.user, 'name', 'N/A')}")
-        st.info(f"**Email:** {getattr(st.user, 'email', 'N/A')}")
-        
-        # Display additional user attributes if available
-        if hasattr(st.user, 'given_name') or hasattr(st.user, 'family_name'):
-            given = getattr(st.user, 'given_name', '')
-            family = getattr(st.user, 'family_name', '')
-            if given or family:
-                st.info(f"**Full Name:** {given} {family}".strip())
-        
-        if hasattr(st.user, 'email_verified'):
-            verified = getattr(st.user, 'email_verified', False)
-            st.success(f"**Email Verified:** {'✅ Yes' if verified else '❌ No'}")
+        # Subscription status
+        st.success("🎯 **Current Plan:** Beta User")
+        st.info("You're currently enjoying early access to Chef's Assistant!")
         
         st.divider()
         
-        # Logout button
+        # Meal planning preference
+        st.subheader("Meal Planning Preferences")
+        meals_per_week = st.slider(
+            "How many meals per week would you like to plan?",
+            min_value=1,
+            max_value=7,
+            value=st.session_state.meals_per_week,
+            help="This setting helps us customize your meal planning experience"
+        )
+        
+        if meals_per_week != st.session_state.meals_per_week:
+            st.session_state.meals_per_week = meals_per_week
+            st.success(f"✅ Preference updated: {meals_per_week} meals per week")
+    
+    with tab2:
+        st.header("Personal Information")
+        
+        # User avatar and basic info section
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            if hasattr(st.user, 'picture') and st.user.picture:
+                st.image(st.user.picture, width=120)
+            else:
+                st.markdown("📷 No profile picture")
+        
+        with col2:
+            # Display user information in a cleaner format
+            user_name = getattr(st.user, 'name', 'N/A')
+            user_email = getattr(st.user, 'email', 'N/A')
+            
+            st.markdown(f"**Name:** {user_name}")
+            st.markdown(f"**Email:** {user_email}")
+            
+            # Additional user details if available
+            if hasattr(st.user, 'given_name') and hasattr(st.user, 'family_name'):
+                given = getattr(st.user, 'given_name', '')
+                family = getattr(st.user, 'family_name', '')
+                if given or family:
+                    st.markdown(f"**Full Name:** {given} {family}".strip())
+            
+            if hasattr(st.user, 'email_verified'):
+                verified = getattr(st.user, 'email_verified', False)
+                if verified:
+                    st.success("✅ Email Verified")
+                else:
+                    st.warning("❌ Email Not Verified")
+        
+        st.divider()
+        
+        # Account actions
+        st.subheader("Account Actions")
         if st.button("🚪 Logout", use_container_width=True, type="primary"):
             st.logout()
 
