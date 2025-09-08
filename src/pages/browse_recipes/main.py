@@ -51,7 +51,6 @@ def view_all_recipes():
             "🔍 Search recipes", 
             placeholder="Enter recipe name or ingredient...", 
             key="search",
-            disabled=not has_any_recipes,
             help="Search through your recipes" if has_any_recipes else "Add local recipes to enable search",
             on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on search
         )
@@ -66,7 +65,6 @@ def view_all_recipes():
             options=available_categories,
             default=[],
             key="categories",
-            disabled=not has_any_recipes,
             help="Select categories to filter by (no selection shows all)" if has_any_recipes else "Add recipes to enable filters",
             on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on filter change
         )
@@ -76,7 +74,6 @@ def view_all_recipes():
             "Source", 
             ["All", "Local", "Default"], 
             key="source",
-            disabled=not has_any_recipes,
             help="Filter by recipe source",
             on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on filter change
         )
