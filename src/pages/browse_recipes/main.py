@@ -29,9 +29,8 @@ def view_all_recipes():
     """Display all recipes with search and filter options"""
     st.header("📖 View All Recipes")
     
-    # Initialize session state if not already done
-    if 'recipes_loaded' not in st.session_state:
-        initialize_session_state()
+    # Force session state initialization every time
+    initialize_session_state()
     
     # Initialize pagination state
     if 'current_page' not in st.session_state:
@@ -86,6 +85,7 @@ def view_all_recipes():
     
     # Available recipes section
     st.subheader("Recipe Library")
+    
     
     # Display recipes
     display_recipes(search_term if has_any_recipes else "", selected_categories, source_filter)

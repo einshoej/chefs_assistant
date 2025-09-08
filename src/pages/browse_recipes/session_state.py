@@ -20,8 +20,9 @@ def initialize_session_state():
     if 'weekly_plans' not in st.session_state:
         st.session_state.weekly_plans = {}
     
-    # Load default recipes if not already loaded
-    if not st.session_state.get('default_recipes_loaded', False):
+    # Always try to load default recipes if empty (force reload)
+    if not st.session_state.default_recipes or not st.session_state.get('default_recipes_loaded', False):
+        logger.info("Loading default recipes...")
         load_default_recipes()
     
     # Try to load from Google Drive if not already loaded
@@ -30,6 +31,9 @@ def initialize_session_state():
     
     # Mark as initialized
     st.session_state.recipes_loaded = True
+    
+    # Debug log
+    logger.info(f"Session state initialized: {len(st.session_state.get('default_recipes', []))} default recipes, {len(st.session_state.get('local_recipes', []))} local recipes")
 
 
 def load_default_recipes():
@@ -131,15 +135,31 @@ def save_weekly_recipes():
 
 
 def get_all_recipes():
-    """Get all available recipes from session state"""
+    """Get all available recipes from session state with fallback"""
     all_recipes = []
     
     # Add default recipes first
-    if 'default_recipes' in st.session_state:
+    if 'default_recipes' in st.session_state and st.session_state.default_recipes:
         all_recipes.extend(st.session_state.default_recipes)
+    else:
+        # Fallback: load default recipes directly if session state is empty
+        logger.info("Session state empty, loading default recipes directly")
+        try:
+            from src.data.default_recipes import load_default_recipes as load_defaults
+            default_recipes = load_defaults()
+            if default_recipes:
+                all_recipes.extend(default_recipes)
+                # Try to save to session state for next time
+                try:
+                    st.session_state.default_recipes = default_recipes
+                    st.session_state.default_recipes_loaded = True
+                except:
+                    pass  # Session state might not be available
+        except Exception as e:
+            logger.error(f"Failed to load default recipes directly: {e}")
     
     # Add local recipes if available
-    if 'local_recipes' in st.session_state:
+    if 'local_recipes' in st.session_state and st.session_state.local_recipes:
         all_recipes.extend(st.session_state.local_recipes)
     
     return all_recipes
