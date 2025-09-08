@@ -67,8 +67,6 @@ def display_week_tab(week_offset: int) -> None:
         # Try to populate the week automatically
         if WeeklyRecipeManager.populate_week_with_random_recipes(week_offset, force=True):
             recipes = WeeklyRecipeManager.get_recipes_for_week(week_offset)
-            if recipes:
-                st.success(f"🎲 Auto-populated with {len(recipes)} random recipes!", icon=":material/auto_awesome:")
     
     # Display recipes if we have them
     if recipes:
