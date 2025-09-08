@@ -5,6 +5,8 @@ Session state management for the This Week page
 import streamlit as st
 from typing import List, Dict, Any
 import logging
+import random
+from .week_utils import get_week_key
 
 logger = logging.getLogger(__name__)
 
@@ -13,12 +15,15 @@ class WeeklyRecipeManager:
     """Manager for weekly recipe session state"""
     
     SESSION_KEY = 'weekly_recipes'
+    WEEKLY_PLANS_KEY = 'weekly_plans'
     
     @classmethod
     def initialize(cls) -> None:
         """Initialize session state for weekly recipes"""
         if cls.SESSION_KEY not in st.session_state:
             st.session_state[cls.SESSION_KEY] = []
+        if cls.WEEKLY_PLANS_KEY not in st.session_state:
+            st.session_state[cls.WEEKLY_PLANS_KEY] = {}
     
     @classmethod
     def save_to_drive(cls) -> bool:
@@ -31,7 +36,7 @@ class WeeklyRecipeManager:
                 # Prepare weekly recipes data
                 weekly_data = {
                     'current_week': st.session_state.get(cls.SESSION_KEY, []),
-                    'weekly_plans': st.session_state.get('weekly_plans', {})
+                    'weekly_plans': st.session_state.get(cls.WEEKLY_PLANS_KEY, {})
                 }
                 
                 # Save weekly recipes
@@ -105,3 +110,132 @@ class WeeklyRecipeManager:
             Number of recipes
         """
         return len(cls.get_recipes())
+    
+    # New methods for multi-week support
+    
+    @classmethod
+    def get_recipes_for_week(cls, week_offset: int) -> List[Dict[str, Any]]:
+        """Get recipes for a specific week offset from current week
+        
+        Args:
+            week_offset: Number of weeks from current week (0 = this week, 1 = next week, etc.)
+            
+        Returns:
+            List of recipe dictionaries for the specified week
+        """
+        cls.initialize()
+        week_key = get_week_key(week_offset)
+        return st.session_state[cls.WEEKLY_PLANS_KEY].get(week_key, [])
+    
+    @classmethod
+    def add_recipe_to_week(cls, recipe: Dict[str, Any], week_offset: int) -> None:
+        """Add a recipe to a specific week
+        
+        Args:
+            recipe: Recipe dictionary to add
+            week_offset: Number of weeks from current week
+        """
+        cls.initialize()
+        week_key = get_week_key(week_offset)
+        
+        if week_key not in st.session_state[cls.WEEKLY_PLANS_KEY]:
+            st.session_state[cls.WEEKLY_PLANS_KEY][week_key] = []
+        
+        st.session_state[cls.WEEKLY_PLANS_KEY][week_key].append(recipe)
+        cls.save_to_drive()
+    
+    @classmethod
+    def remove_recipe_from_week(cls, recipe_index: int, week_offset: int) -> None:
+        """Remove a recipe from a specific week by index
+        
+        Args:
+            recipe_index: Index of recipe to remove
+            week_offset: Number of weeks from current week
+        """
+        cls.initialize()
+        week_key = get_week_key(week_offset)
+        
+        if week_key in st.session_state[cls.WEEKLY_PLANS_KEY]:
+            recipes = st.session_state[cls.WEEKLY_PLANS_KEY][week_key]
+            if 0 <= recipe_index < len(recipes):
+                recipes.pop(recipe_index)
+                cls.save_to_drive()
+    
+    @classmethod
+    def clear_week(cls, week_offset: int) -> None:
+        """Clear all recipes from a specific week
+        
+        Args:
+            week_offset: Number of weeks from current week
+        """
+        cls.initialize()
+        week_key = get_week_key(week_offset)
+        st.session_state[cls.WEEKLY_PLANS_KEY][week_key] = []
+        cls.save_to_drive()
+    
+    @classmethod
+    def populate_week_with_random_recipes(cls, week_offset: int) -> bool:
+        """Populate a week with random recipes based on user's meals_per_week preference
+        
+        Args:
+            week_offset: Number of weeks from current week
+            
+        Returns:
+            bool: True if recipes were added, False if no recipes available or already populated
+        """
+        cls.initialize()
+        
+        # Check if week already has recipes
+        if len(cls.get_recipes_for_week(week_offset)) > 0:
+            return False
+        
+        # Get user's meals per week preference
+        meals_per_week = st.session_state.get('meals_per_week', 3)
+        
+        # Get all available recipes
+        try:
+            from src.pages.browse_recipes.session_state import get_all_recipes
+            all_recipes = get_all_recipes()
+        except:
+            logger.error("Could not import get_all_recipes function")
+            return False
+        
+        if not all_recipes or len(all_recipes) == 0:
+            logger.warning(f"No recipes available to populate week {week_offset}")
+            return False
+        
+        # Select random recipes
+        num_recipes_to_add = min(meals_per_week, len(all_recipes))
+        selected_recipes = random.sample(all_recipes, num_recipes_to_add)
+        
+        # Add recipes to the week
+        week_key = get_week_key(week_offset)
+        st.session_state[cls.WEEKLY_PLANS_KEY][week_key] = selected_recipes.copy()
+        cls.save_to_drive()
+        
+        logger.info(f"Populated week {week_offset} with {num_recipes_to_add} random recipes")
+        return True
+    
+    @classmethod
+    def get_week_recipe_count(cls, week_offset: int) -> int:
+        """Get the number of recipes for a specific week
+        
+        Args:
+            week_offset: Number of weeks from current week
+            
+        Returns:
+            Number of recipes for the specified week
+        """
+        return len(cls.get_recipes_for_week(week_offset))
+    
+    @classmethod
+    def has_recipes_for_week(cls, week_offset: int) -> bool:
+        """Check if there are any recipes for a specific week
+        
+        Args:
+            week_offset: Number of weeks from current week
+            
+        Returns:
+            True if recipes exist for the week, False otherwise
+        """
+        return cls.get_week_recipe_count(week_offset) > 0

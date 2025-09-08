@@ -76,8 +76,15 @@ def process_recipe_image(image_url, target_height=200):
         return None
 
 
-def display_recipe_card(recipe: dict, meal_number: int, idx: int) -> None:
-    """Display a compact recipe card using Streamlit native components with uniform height"""
+def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: int = 0) -> None:
+    """Display a compact recipe card using Streamlit native components with uniform height
+    
+    Args:
+        recipe: Recipe dictionary to display
+        meal_number: Meal number for display
+        idx: Index of recipe in the list
+        week_offset: Week offset for proper recipe removal handling
+    """
     
     # Get recipe data
     image_url = recipe.get('image') or recipe.get('picture')
@@ -159,13 +166,13 @@ def display_recipe_card(recipe: dict, meal_number: int, idx: int) -> None:
         # Remove from this week's plan button
         if st.button(
             "Remove from Plan",
-            key=f"remove_recipe_{idx}",
+            key=f"remove_recipe_{week_offset}_{idx}",
             use_container_width=True,
-            help="Remove from This Week",
+            help=f"Remove from Week {week_offset + 1}",
             type="secondary",
             icon=":material/remove:"
         ):
-            WeeklyRecipeManager.remove_recipe(idx)
+            WeeklyRecipeManager.remove_recipe_from_week(idx, week_offset)
             st.success("Removed!")
             st.rerun()
 
