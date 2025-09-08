@@ -88,7 +88,7 @@ def profile():
         
         # Account actions
         st.subheader("Account Actions")
-        if st.button("🚪 Logout", use_container_width=True, type="primary"):
+        if st.button("🚪 Logout", width='stretch', type="primary"):
             st.logout()
 
 

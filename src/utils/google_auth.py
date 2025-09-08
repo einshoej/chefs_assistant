@@ -200,7 +200,7 @@ def show_drive_authorization_component():
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Test Drive Connection", use_container_width=True):
+            if st.button("Test Drive Connection", width='stretch'):
                 service = auth.get_drive_service()
                 if service:
                     try:
@@ -213,7 +213,7 @@ def show_drive_authorization_component():
                     st.error("Could not connect to Drive")
         
         with col2:
-            if st.button("Disconnect Google Drive", type="secondary", use_container_width=True):
+            if st.button("Disconnect Google Drive", type="secondary", width='stretch'):
                 auth.clear_credentials()
                 st.rerun()
                 

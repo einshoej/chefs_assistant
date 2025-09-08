@@ -77,7 +77,7 @@ def show_login_page():
         """, unsafe_allow_html=True)
         
         # Use native st.login with callback
-        if st.button("🔐 Sign in with Google", use_container_width=True, type="primary"):
+        if st.button("🔐 Sign in with Google", width='stretch', type="primary"):
             st.login()
         
         st.write("")

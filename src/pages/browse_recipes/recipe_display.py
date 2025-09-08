@@ -113,7 +113,7 @@ def display_recipe_card(recipe, idx):
         if image_url:
             processed_image = process_recipe_image(image_url, target_height=200)
             if processed_image:
-                st.image(processed_image, use_container_width=True)
+                st.image(processed_image, width='stretch')
             else:
                 st.markdown("🖼️ *Image could not be loaded*")
                 st.markdown("")  # Add some vertical space
@@ -155,7 +155,7 @@ def display_recipe_card(recipe, idx):
         if st.button(
             "Add to This Week",
             key=f"add_recipe_{idx}",
-            use_container_width=True,
+            width='stretch',
             help="Add to This Week",
             type="primary",
             icon=":material/add:"

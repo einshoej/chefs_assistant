@@ -115,7 +115,7 @@ def show_google_drive_auth():
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Test Drive Connection", use_container_width=True):
+            if st.button("Test Drive Connection", width='stretch'):
                 service = auth.get_drive_service()
                 if service:
                     try:
@@ -131,7 +131,7 @@ def show_google_drive_auth():
                     st.error("Could not connect to Drive")
         
         with col2:
-            if st.button("Disconnect Google Drive", type="secondary", use_container_width=True):
+            if st.button("Disconnect Google Drive", type="secondary", width='stretch'):
                 auth.clear_token()
                 st.rerun()
     
@@ -152,7 +152,7 @@ def show_google_drive_auth():
             scope=DRIVE_SCOPE,
             key="google_drive_auth",
             extras_params={"access_type": "offline", "prompt": "consent"},
-            use_container_width=True,
+            width='stretch',
             pkce='S256'  # Use PKCE for better security
         )
         

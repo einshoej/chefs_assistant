@@ -132,7 +132,7 @@ def display_recipes(search_term: str = "", categories: list = None, source: str 
     
     with col1:
         if st.session_state.current_page > 0:
-            if st.button("⬅️ Previous 10", use_container_width=True):
+            if st.button("⬅️ Previous 10", width='stretch'):
                 st.session_state.current_page -= 1
                 st.rerun()
         else:
@@ -153,7 +153,7 @@ def display_recipes(search_term: str = "", categories: list = None, source: str 
     
     with col3:
         if st.session_state.current_page < total_pages - 1:
-            if st.button("Next 10 ➡️", use_container_width=True):
+            if st.button("Next 10 ➡️", width='stretch'):
                 st.session_state.current_page += 1
                 st.rerun()
         else:
