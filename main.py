@@ -16,6 +16,20 @@ Architecture:
 - Authentication: Streamlit native auth system
 """
 
+import sys
+import os
+from pathlib import Path
+
+# Add project root to Python path for imports
+try:
+    project_root = Path(__file__).parent
+except NameError:
+    # Fallback for environments where __file__ is not defined
+    project_root = Path.cwd()
+
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 import streamlit as st
 from src.utils.auth import is_user_logged_in, show_login_page
 from src.utils.settings import initialize_user_settings
