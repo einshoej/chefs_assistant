@@ -20,7 +20,10 @@
       "Bash(git branch:*)",
       "Bash(git remote add:*)",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pip show:*)",
+      "Read(//c/GitHub/chefs_assistant/src/pages/this_week/**)",
+      "Read(//c/GitHub/chefs_assistant/**)"
     ],
     "deny": [],
     "ask": []

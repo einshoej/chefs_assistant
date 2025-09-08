@@ -228,7 +228,6 @@ class GoogleDriveRecipeStorage:
             else:
                 logger.info("No recipes file found in Google Drive")
                 return {
-                    'local_recipes': [],
                     'last_updated': None
                 }
                 

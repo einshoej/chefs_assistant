@@ -33,65 +33,20 @@ def get_user_name():
 
 def show_login_page():
     """Display the login page"""
-    st.title("🍳 Chef's Assistant")
-    st.markdown("### Welcome to Chef's Assistant!")
-    st.write("Plan your weekly meals with our easy-to-use recipe calendar application.")
-    
-    st.divider()
     
     _, col2, _ = st.columns([1, 2, 1])
     
     with col2:
-        st.markdown("### 🔐 Please sign in to continue")
-        st.write("")
-        
-        # Show Google login button
-        st.markdown("""
-        <style>
-        .google-login-button {
-            background-color: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s;
-        }
-        .google-login-button:hover {
-            background-color: #357ae8;
-        }
-        .google-icon {
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
-            background: white;
-            border-radius: 2px;
-            padding: 2px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        st.title("Chef's Assistant")
+        st.write("Plan your weekly meals with our easy-to-use recipe calendar application.")
+
+        st.divider()
+        st.title("Please sign in to continue")
         
         # Use native st.login with callback
-        if st.button("🔐 Sign in with Google", width='stretch', type="primary"):
+        if st.button("Sign in with Google", width='stretch', type="primary", icon=":material/login:"):
             st.login()
         
-        st.write("")
-        st.caption("Sign in with your Google account to access all features.")
-        
-        # Features list
-        with st.expander("✨ Features"):
-            st.markdown("""
-            - 📅 **Weekly Meal Planning** - Organize your meals for the entire week
-            - 🔍 **Recipe Browser** - Search and filter through a variety of recipes
-            - 📆 **Interactive Calendar** - Drag and drop recipes to plan your meals
-            - 👤 **Personal Profile** - Save your favorite recipes and meal plans
-            - 🎯 **Smart Suggestions** - Get recipe recommendations based on your preferences
-            """)
         
         # Setup instructions if auth is not configured
         if not check_auth_configured():

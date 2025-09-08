@@ -6,6 +6,7 @@ import streamlit as st
 import requests
 from PIL import Image
 import io
+import numpy as np
 from src.pages.browse_recipes.session_state import add_to_weekly_recipes
 
 
@@ -69,10 +70,11 @@ def process_recipe_image(image_url, target_height=200):
         # Resize to final dimensions
         processed_img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
         
-        return processed_img
+        return np.array(processed_img)
         
     except (requests.RequestException, Image.UnidentifiedImageError, Exception) as e:
-        st.error(f"Failed to process image: {str(e)}")
+        # Don't use st.error here as it might cause width parameter issues
+        print(f"Failed to process image: {str(e)}")
         return None
 
 
@@ -111,10 +113,15 @@ def display_recipe_card(recipe, idx):
     with st.container(border=True, height="content"):
         # Image section with preprocessing for fixed height
         if image_url:
-            processed_image = process_recipe_image(image_url, target_height=200)
-            if processed_image:
-                st.image(processed_image, width='stretch')
-            else:
+            try:
+                processed_image = process_recipe_image(image_url, target_height=200)
+                if processed_image is not None:
+                    st.image(processed_image)
+                else:
+                    st.markdown("🖼️ *Image could not be loaded*")
+                    st.markdown("")  # Add some vertical space
+            except Exception as e:
+                st.error(f"Image processing error: {str(e)}")
                 st.markdown("🖼️ *Image could not be loaded*")
                 st.markdown("")  # Add some vertical space
         else:
@@ -155,7 +162,7 @@ def display_recipe_card(recipe, idx):
         if st.button(
             "Add to This Week",
             key=f"add_recipe_{idx}",
-            width='stretch',
+            use_container_width=True,
             help="Add to This Week",
             type="primary",
             icon=":material/add:"

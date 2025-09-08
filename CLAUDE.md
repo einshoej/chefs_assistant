@@ -71,7 +71,7 @@ Authentication utilities in `src/utils/auth.py` handle login state and user info
 
 ## Data Flow
 
-1. **Recipe Loading**: Local recipes stored in `st.session_state.local_recipes`
+1. **Recipe Loading**: Default recipes loaded from local data files
 2. **Meal Planning**: Weekly meal plans stored in `st.session_state.meal_plans`
 3. **Session Management**: Data stored in session state with optional Google Drive persistence
 4. **User State**: Authentication state managed by Streamlit auth system

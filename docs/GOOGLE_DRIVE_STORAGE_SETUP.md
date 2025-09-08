@@ -120,7 +120,6 @@ Your recipes are stored in JSON format:
 ```json
 {
   "anylist_recipes": [...],
-  "local_recipes": [...],
   "last_sync": "2024-01-20 10:30:00",
   "last_updated": "2024-01-20T10:30:00"
 }

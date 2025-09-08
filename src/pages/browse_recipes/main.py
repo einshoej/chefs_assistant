@@ -27,7 +27,7 @@ def get_all_categories(recipes):
 
 def view_all_recipes():
     """Display all recipes with search and filter options"""
-    st.header("📖 View All Recipes")
+    st.header("View All Recipes")
     
     # Force session state initialization every time
     initialize_session_state()
@@ -41,23 +41,24 @@ def view_all_recipes():
     # Search and filter section
     st.subheader("Find Recipes")
     
-    # Check if we have recipes
-    has_any_recipes = 'local_recipes' in st.session_state and st.session_state.local_recipes
+    # Get all recipes to check if we have any
+    all_recipes = get_all_recipes()
+    has_any_recipes = len(all_recipes) > 0
     
     col1, col2, col3 = st.columns([2, 1, 1])
     
     with col1:
         search_term = st.text_input(
-            "🔍 Search recipes", 
-            placeholder="Enter recipe name or ingredient...", 
+            "Search recipes", 
+            placeholder="Enter recipe name or ingredient...",
             key="search",
-            help="Search through your recipes" if has_any_recipes else "Add local recipes to enable search",
-            on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on search
+            help="Search through your recipes" if has_any_recipes else "No recipes available to search",
+            on_change=lambda: setattr(st.session_state, 'current_page', 0),
+            icon=":material/search:"
         )
     
     with col2:
-        # Get all recipes to extract categories
-        all_recipes = get_all_recipes() if has_any_recipes else []
+        # Get available categories from all recipes
         available_categories = get_all_categories(all_recipes)
         
         selected_categories = st.multiselect(
@@ -65,7 +66,7 @@ def view_all_recipes():
             options=available_categories,
             default=[],
             key="categories",
-            help="Select categories to filter by (no selection shows all)" if has_any_recipes else "Add recipes to enable filters",
+            help="Select categories to filter by (no selection shows all)" if has_any_recipes else "No recipes available to filter",
             on_change=lambda: setattr(st.session_state, 'current_page', 0)  # Reset to first page on filter change
         )
     
@@ -95,7 +96,7 @@ def display_recipes(search_term: str = "", categories: list = None, source: str 
     all_recipes = get_all_recipes()
     
     if not all_recipes:
-        st.info("📚 No recipes available. Add local recipes to get started.")
+        st.info("📚 No recipes available. Default recipes should be loaded automatically.")
         return
     
     # Filter recipes

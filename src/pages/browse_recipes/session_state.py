@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 def initialize_session_state():
     """Initialize session state for recipes if not already set"""
     # Initialize recipe storage in session state
-    if 'local_recipes' not in st.session_state:
-        st.session_state.local_recipes = []
     if 'default_recipes' not in st.session_state:
         st.session_state.default_recipes = []
     if 'weekly_recipes' not in st.session_state:
@@ -33,7 +31,7 @@ def initialize_session_state():
     st.session_state.recipes_loaded = True
     
     # Debug log
-    logger.info(f"Session state initialized: {len(st.session_state.get('default_recipes', []))} default recipes, {len(st.session_state.get('local_recipes', []))} local recipes")
+    logger.info(f"Session state initialized: {len(st.session_state.get('default_recipes', []))} default recipes")
 
 
 def load_default_recipes():
@@ -64,12 +62,6 @@ def load_recipes_from_drive():
         
         storage = get_google_drive_storage()
         if storage:
-            # Load recipes
-            recipes_data = storage.load_recipes()
-            if recipes_data:
-                st.session_state.local_recipes = recipes_data.get('local_recipes', [])
-                logger.info(f"Loaded {len(st.session_state.local_recipes)} local recipes from Drive")
-            
             # Load meal plans
             meal_plans_data = storage.load_meal_plans()
             if meal_plans_data:
@@ -89,24 +81,15 @@ def load_recipes_from_drive():
 
 
 def save_recipes_to_drive():
-    """Save all recipes to Google Drive if available"""
+    """Save all recipes to Google Drive if available - currently no local recipes to save"""
     try:
         from src.data.google_drive_storage import get_google_drive_storage
         
         storage = get_google_drive_storage()
         if storage:
-            # Prepare recipes data
-            recipes_data = {
-                'local_recipes': st.session_state.get('local_recipes', [])
-            }
-            
-            # Save recipes
-            if storage.save_recipes(recipes_data):
-                logger.info("Saved recipes to Google Drive")
-                return True
-            else:
-                logger.error("Failed to save recipes to Google Drive")
-                return False
+            # No local recipes to save anymore
+            logger.info("No local recipes to save to Google Drive")
+            return True
                 
     except Exception as e:
         logger.error(f"Error saving recipes to Drive: {e}")
@@ -158,9 +141,7 @@ def get_all_recipes():
         except Exception as e:
             logger.error(f"Failed to load default recipes directly: {e}")
     
-    # Add local recipes if available
-    if 'local_recipes' in st.session_state and st.session_state.local_recipes:
-        all_recipes.extend(st.session_state.local_recipes)
+    # No local recipes anymore - only using default recipes
     
     return all_recipes
 
@@ -169,7 +150,6 @@ def get_recipe_counts():
     """Get counts of recipes from different sources"""
     counts = {
         'default': len(st.session_state.get('default_recipes', [])),
-        'local': len(st.session_state.get('local_recipes', [])),
         'weekly': len(st.session_state.get('weekly_recipes', [])),
         'total': len(get_all_recipes())
     }
