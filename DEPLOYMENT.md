@@ -17,6 +17,7 @@
 This repository is already configured for Streamlit deployment with:
 - `main.py` as the entry point
 - `requirements.txt` with all Python dependencies
+- `packages.txt` for Linux system dependencies (Node.js/npm)
 - `.streamlit/config.toml` for app configuration
 - `.streamlit/secrets.toml.example` as a template for secrets
 
@@ -81,12 +82,16 @@ If you want to use Google Drive for persistent storage:
 
 #### AnyList Integration
 
-Note: AnyList integration requires Node.js, which is not available on Streamlit Community Cloud by default. The app will work without it, but recipe importing from AnyList will be disabled.
+The app now includes support for AnyList on Streamlit Community Cloud:
 
-For full AnyList support, consider:
-- Self-hosting the application
-- Using a Docker deployment
-- Setting up a separate API service for AnyList
+1. **Node.js Support**: The `packages.txt` file includes Node.js and npm, which will be automatically installed on deployment
+2. **Automatic Setup**: The app will automatically install Node.js dependencies on first run
+3. **Cross-Platform**: The code now detects the platform and adjusts subprocess calls accordingly
+
+If AnyList features still don't work after deployment:
+- Check the app logs for any Node.js installation errors
+- Verify that the AnyList credentials are correctly configured in secrets
+- Consider alternative deployment methods if issues persist
 
 ### Updating Your App
 
@@ -107,12 +112,14 @@ git push origin main
 
 #### Missing Dependencies
 - All Python dependencies should be in `requirements.txt`
+- System dependencies (Node.js/npm) should be in `packages.txt`
 - Streamlit will automatically install them on deployment
 
 #### AnyList Features Not Working
-- This is expected on Streamlit Community Cloud
-- The app will gracefully handle the missing Node.js dependency
-- Consider alternative deployment methods if this feature is critical
+- Check that `packages.txt` includes `nodejs` and `npm`
+- Verify the app logs show successful Node.js installation
+- The app will automatically run `npm install` for the AnyList bridge
+- If issues persist, check the Streamlit Cloud logs for specific errors
 
 ### Local Development
 

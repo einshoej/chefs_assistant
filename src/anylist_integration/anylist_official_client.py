@@ -5,6 +5,8 @@ AnyList Official Client - Python wrapper for the official Node.js anylist packag
 import json
 import subprocess
 import logging
+import platform
+import os
 from typing import List, Dict, Optional
 from pathlib import Path
 
@@ -37,30 +39,43 @@ class AnyListOfficialClient:
     
     def _check_nodejs(self):
         """Check if Node.js is installed"""
+        # Determine if we need shell=True based on platform
+        is_windows = platform.system() == "Windows"
+        
         try:
             result = subprocess.run(
                 ["node", "--version"],
                 capture_output=True,
                 text=True,
                 check=False,
-                shell=True  # Use shell=True on Windows to find node in PATH
+                shell=is_windows  # Only use shell=True on Windows
             )
             if result.returncode != 0:
                 raise RuntimeError("Node.js is not installed")
             logger.info("Node.js version: %s", result.stdout.strip())
         except FileNotFoundError:
-            raise RuntimeError(
-                "\n❌ Node.js is not installed or not in PATH!\n"
-                "Please install Node.js first:\n"
-                "1. Download Node.js from https://nodejs.org/\n"
-                "2. Install it (npm comes with Node.js)\n"
-                "3. Restart your terminal/IDE to update PATH\n"
-                "4. Run the setup script: powershell src/scripts/setup/setup_nodejs_anylist.ps1"
-            )
+            # Check if we're on Streamlit Community Cloud
+            if os.environ.get('STREAMLIT_SHARING_MODE'):
+                raise RuntimeError(
+                    "\n❌ Node.js is not available in the deployment environment!\n"
+                    "Make sure packages.txt includes 'nodejs' and 'npm'."
+                )
+            else:
+                raise RuntimeError(
+                    "\n❌ Node.js is not installed or not in PATH!\n"
+                    "Please install Node.js first:\n"
+                    "1. Download Node.js from https://nodejs.org/\n"
+                    "2. Install it (npm comes with Node.js)\n"
+                    "3. Restart your terminal/IDE to update PATH\n"
+                    "4. Run the setup script: powershell src/scripts/setup/setup_nodejs_anylist.ps1"
+                )
     
     def _setup_npm_dependencies(self):
         """Install npm dependencies if not already installed"""
         node_modules = self.bridge_dir / "node_modules"
+        
+        # Determine if we need shell=True based on platform
+        is_windows = platform.system() == "Windows"
         
         if not node_modules.exists():
             # First check if npm is available
@@ -70,32 +85,49 @@ class AnyListOfficialClient:
                     ["npm", "--version"],
                     capture_output=True,
                     text=True,
-                    shell=True  # Use shell=True on Windows to find npm in PATH
+                    shell=is_windows  # Only use shell=True on Windows
                 )
                 if npm_check.returncode != 0:
                     raise FileNotFoundError("npm not found")
                     
                 logger.info("Installing npm dependencies...")
+                
+                # For Streamlit Community Cloud, ensure we can write to the directory
+                if os.environ.get('STREAMLIT_SHARING_MODE'):
+                    # Try to ensure the directory is writable
+                    try:
+                        os.makedirs(self.bridge_dir, exist_ok=True)
+                    except Exception as e:
+                        logger.warning(f"Could not ensure directory exists: {e}")
+                
                 result = subprocess.run(
                     ["npm", "install"],
                     cwd=str(self.bridge_dir),
                     capture_output=True,
                     text=True,
                     check=True,
-                    shell=True  # Use shell=True on Windows
+                    shell=is_windows  # Only use shell=True on Windows
                 )
                 logger.info("✅ npm dependencies installed successfully")
                 
             except FileNotFoundError:
-                error_msg = (
-                    "\n❌ Node.js/npm is not installed or not in PATH!\n"
-                    "Please install Node.js first:\n"
-                    "1. Download Node.js from https://nodejs.org/\n"
-                    "2. Install it (npm comes with Node.js)\n"
-                    "3. Restart your terminal/IDE to update PATH\n"
-                    "4. Run the setup script: powershell src/scripts/setup/setup_nodejs_anylist.ps1\n"
-                    "Or manually run 'npm install' in src/anylist_integration/nodejs/"
-                )
+                # Check if we're on Streamlit Community Cloud
+                if os.environ.get('STREAMLIT_SHARING_MODE'):
+                    error_msg = (
+                        "\n❌ npm is not available in the deployment environment!\n"
+                        "Make sure packages.txt includes 'nodejs' and 'npm'.\n"
+                        "The app needs Node.js to integrate with AnyList."
+                    )
+                else:
+                    error_msg = (
+                        "\n❌ Node.js/npm is not installed or not in PATH!\n"
+                        "Please install Node.js first:\n"
+                        "1. Download Node.js from https://nodejs.org/\n"
+                        "2. Install it (npm comes with Node.js)\n"
+                        "3. Restart your terminal/IDE to update PATH\n"
+                        "4. Run the setup script: powershell src/scripts/setup/setup_nodejs_anylist.ps1\n"
+                        "Or manually run 'npm install' in src/anylist_integration/nodejs/"
+                    )
                 logger.error(error_msg)
                 raise RuntimeError(error_msg)
             except subprocess.CalledProcessError as e:
@@ -110,6 +142,9 @@ class AnyListOfficialClient:
         
         cmd = ["node", str(self.bridge_script), command] + list(args)
         
+        # Determine if we need shell=True based on platform
+        is_windows = platform.system() == "Windows"
+        
         try:
             result = subprocess.run(
                 cmd,
@@ -118,7 +153,7 @@ class AnyListOfficialClient:
                 encoding='utf-8',
                 errors='replace',  # Replace any characters that can't be decoded
                 check=False,
-                shell=True  # Use shell=True on Windows to find node in PATH
+                shell=is_windows  # Only use shell=True on Windows
             )
             
             # Parse JSON output from stdout
