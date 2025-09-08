@@ -6,7 +6,7 @@ import streamlit as st
 import requests
 from PIL import Image
 import io
-from src.pages.this_week.session_manager import WeeklyRecipeManager
+from .session_manager import WeeklyRecipeManager
 
 
 @st.cache_data

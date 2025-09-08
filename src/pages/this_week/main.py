@@ -3,11 +3,11 @@ This Week page - Display multiple weeks of recipes with tabs
 """
 
 import streamlit as st
-from src.pages.this_week.recipe_components import (
+from .recipe_components import (
     display_recipe_card
 )
-from src.pages.this_week.session_manager import WeeklyRecipeManager
-from src.pages.this_week.week_utils import get_relative_week_label
+from .session_manager import WeeklyRecipeManager
+from .week_utils import get_relative_week_label
 
 
 def display_header() -> None:
