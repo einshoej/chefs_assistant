@@ -174,19 +174,20 @@ class WeeklyRecipeManager:
         cls.save_to_drive()
     
     @classmethod
-    def populate_week_with_random_recipes(cls, week_offset: int) -> bool:
+    def populate_week_with_random_recipes(cls, week_offset: int, force: bool = False) -> bool:
         """Populate a week with random recipes based on user's meals_per_week preference
         
         Args:
             week_offset: Number of weeks from current week
+            force: If True, populate even if week already has recipes
             
         Returns:
-            bool: True if recipes were added, False if no recipes available or already populated
+            bool: True if recipes were added, False if no recipes available
         """
         cls.initialize()
         
-        # Check if week already has recipes
-        if len(cls.get_recipes_for_week(week_offset)) > 0:
+        # Check if week already has recipes (unless force is True)
+        if not force and len(cls.get_recipes_for_week(week_offset)) > 0:
             return False
         
         # Get user's meals per week preference
@@ -204,9 +205,32 @@ class WeeklyRecipeManager:
             logger.warning(f"No recipes available to populate week {week_offset}")
             return False
         
-        # Select random recipes
+        # Select random recipes, trying to avoid duplicates across weeks when possible
         num_recipes_to_add = min(meals_per_week, len(all_recipes))
-        selected_recipes = random.sample(all_recipes, num_recipes_to_add)
+        
+        # Get recipes already used in other weeks to try to avoid duplicates
+        used_recipe_names = set()
+        for other_week in range(4):  # Check 4 weeks
+            if other_week != week_offset:
+                other_week_recipes = cls.get_recipes_for_week(other_week)
+                for recipe in other_week_recipes:
+                    used_recipe_names.add(recipe.get('name', ''))
+        
+        # Try to select recipes not used in other weeks first
+        unused_recipes = [r for r in all_recipes if r.get('name', '') not in used_recipe_names]
+        
+        if len(unused_recipes) >= num_recipes_to_add:
+            # We have enough unused recipes
+            selected_recipes = random.sample(unused_recipes, num_recipes_to_add)
+        elif len(unused_recipes) > 0:
+            # Use all unused recipes and fill the rest from all recipes
+            selected_recipes = unused_recipes.copy()
+            remaining_needed = num_recipes_to_add - len(unused_recipes)
+            remaining_recipes = random.sample(all_recipes, remaining_needed)
+            selected_recipes.extend(remaining_recipes)
+        else:
+            # All recipes are used, just select randomly
+            selected_recipes = random.sample(all_recipes, num_recipes_to_add)
         
         # Add recipes to the week
         week_key = get_week_key(week_offset)

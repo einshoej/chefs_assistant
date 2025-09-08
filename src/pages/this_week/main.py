@@ -68,34 +68,56 @@ def display_week_tab(week_offset: int) -> None:
     except:
         all_available_recipes = []
     
-    # Auto-populate with random recipes if week is empty
-    if not recipes and all_available_recipes:
-        if WeeklyRecipeManager.populate_week_with_random_recipes(week_offset):
-            st.success(f"🎲 Added {st.session_state.get('meals_per_week', 3)} random recipes to your meal plan!")
-            st.rerun()
-    
     # Display content based on recipe availability
     if not all_available_recipes:
         st.error("No recipes available! Go to 'Browse Recipes' to add recipes to your collection.", icon=":material/no_sim:")
-    elif not recipes:
-        meals_per_week = st.session_state.get('meals_per_week', 3)
-        st.info(f"This week will be automatically populated with {meals_per_week} random recipes when you refresh the page.", icon=":material/auto_awesome:")
+        return
+    
+    # Auto-populate with random recipes if week is empty
+    if not recipes:
+        # Try to populate the week automatically
+        if WeeklyRecipeManager.populate_week_with_random_recipes(week_offset, force=True):
+            recipes = WeeklyRecipeManager.get_recipes_for_week(week_offset)
+            if recipes:
+                st.success(f"🎲 Auto-populated with {len(recipes)} random recipes!", icon=":material/auto_awesome:")
+    
+    # Display recipes if we have them
+    if recipes:
+        display_recipes(recipes, week_offset)
         
-        # Manual populate button as fallback
-        if st.button(f"🎲 Add {meals_per_week} Random Recipes", key=f"populate_week_{week_offset}"):
-            if WeeklyRecipeManager.populate_week_with_random_recipes(week_offset):
+        # Add action buttons
+        col1, col2 = st.columns(2)
+        with col1:
+            handle_clear_action(week_offset)
+        with col2:
+            # Refresh button to regenerate random recipes
+            meals_per_week = st.session_state.get('meals_per_week', 3)
+            if st.button(f"🔄 Refresh ({meals_per_week} new recipes)", key=f"refresh_week_{week_offset}", type="secondary"):
+                WeeklyRecipeManager.clear_week(week_offset)
+                if WeeklyRecipeManager.populate_week_with_random_recipes(week_offset, force=True):
+                    st.success("Refreshed with new random recipes!")
+                    st.rerun()
+    else:
+        # Fallback if auto-population failed
+        meals_per_week = st.session_state.get('meals_per_week', 3)
+        st.warning("Could not auto-populate this week. Please try manually.", icon=":material/warning:")
+        if st.button(f"🎲 Add {meals_per_week} Random Recipes", key=f"manual_populate_week_{week_offset}"):
+            if WeeklyRecipeManager.populate_week_with_random_recipes(week_offset, force=True):
                 st.success("Added random recipes!")
                 st.rerun()
-    else:
-        # Display recipes and clear button
-        display_recipes(recipes, week_offset)
-        handle_clear_action(week_offset)
 
 
 def main() -> None:
     """Main orchestrator function for the Weekly Meal Plans page"""
-    # Initialize session state
+    # Initialize session state and ensure recipes are loaded
     WeeklyRecipeManager.initialize()
+    
+    # Initialize recipe data if not already done
+    try:
+        from src.pages.browse_recipes.session_state import initialize_session_state
+        initialize_session_state()
+    except Exception as e:
+        st.error(f"Failed to initialize recipe data: {e}")
     
     # Initialize meals_per_week if not set
     if "meals_per_week" not in st.session_state:
