@@ -113,15 +113,10 @@ def display_recipe_card(recipe, idx):
     with st.container(border=True, height="content"):
         # Image section with preprocessing for fixed height
         if image_url:
-            try:
-                processed_image = process_recipe_image(image_url, target_height=200)
-                if processed_image is not None:
-                    st.image(processed_image)
-                else:
-                    st.markdown("🖼️ *Image could not be loaded*")
-                    st.markdown("")  # Add some vertical space
-            except Exception as e:
-                st.error(f"Image processing error: {str(e)}")
+            processed_image = process_recipe_image(image_url, target_height=200)
+            if processed_image is not None:
+                st.image(processed_image, width="stretch")
+            else:
                 st.markdown("🖼️ *Image could not be loaded*")
                 st.markdown("")  # Add some vertical space
         else:
@@ -162,7 +157,7 @@ def display_recipe_card(recipe, idx):
         if st.button(
             "Add to This Week",
             key=f"add_recipe_{idx}",
-            use_container_width=True,
+            width="stretch",
             help="Add to This Week",
             type="primary",
             icon=":material/add:"

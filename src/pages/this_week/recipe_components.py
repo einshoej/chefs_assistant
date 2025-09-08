@@ -120,9 +120,18 @@ def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: i
     
     # Main container with border
     with st.container(border=True, height="content"):
-        # Image section - temporarily disabled for debugging
-        st.markdown("🖼️ *Image display temporarily disabled*")
-        st.markdown("")  # Add some vertical space
+        # Image section with preprocessing for fixed height
+        if image_url:
+            processed_image = process_recipe_image(image_url, target_height=200)
+            if processed_image is not None:
+                st.image(processed_image, width="stretch")
+            else:
+                st.markdown("🖼️ *Image could not be loaded*")
+                st.markdown("")  # Add some vertical space
+        else:
+            # Create placeholder space for no image
+            st.markdown("🖼️ *No image available*")
+            st.markdown("")  # Add some vertical space
     
         
         # Build badges in markdown format
@@ -160,7 +169,7 @@ def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: i
         if st.button(
             "Remove from Plan",
             key=f"remove_recipe_{week_offset}_{idx}",
-            use_container_width=True,
+            width="stretch",
             help=f"Remove from Week {week_offset + 1}",
             type="secondary",
             icon=":material/remove:"
