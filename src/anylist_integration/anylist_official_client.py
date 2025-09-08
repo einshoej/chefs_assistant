@@ -19,16 +19,21 @@ class AnyListOfficialClient:
         self.email = email
         self.password = password
         self.logged_in = False
+        self.nodejs_available = False
         
         # Path to Node.js bridge script
         self.bridge_dir = Path(__file__).parent / "nodejs"
         self.bridge_script = self.bridge_dir / "anylist_bridge.js"
         
         # Check if Node.js is installed
-        self._check_nodejs()
-        
-        # Install npm dependencies if needed
-        self._setup_npm_dependencies()
+        try:
+            self._check_nodejs()
+            self.nodejs_available = True
+            # Install npm dependencies if needed
+            self._setup_npm_dependencies()
+        except RuntimeError as e:
+            logger.warning(f"Node.js not available: {e}")
+            self.nodejs_available = False
     
     def _check_nodejs(self):
         """Check if Node.js is installed"""
@@ -99,6 +104,10 @@ class AnyListOfficialClient:
     
     def _run_bridge_command(self, command: str, *args) -> Dict:
         """Run a command through the Node.js bridge"""
+        if not self.nodejs_available:
+            logger.warning("Node.js is not available, cannot run AnyList commands")
+            return {"success": False, "error": "Node.js is not available"}
+        
         cmd = ["node", str(self.bridge_script), command] + list(args)
         
         try:

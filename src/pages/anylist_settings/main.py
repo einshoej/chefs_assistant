@@ -5,6 +5,7 @@ AnyList Settings Page - Configure AnyList integration
 import streamlit as st
 from src.anylist_integration.credential_manager import get_credential_manager
 from src.anylist_integration.anylist_official_client import AnyListOfficialClient
+from src.anylist_integration.nodejs_check import is_nodejs_available, get_nodejs_status_message
 from src.utils.auth import is_user_logged_in
 
 
@@ -105,6 +106,17 @@ def display_google_drive_settings():
 def display_anylist_settings():
     """Display AnyList integration settings"""
     st.header("🔗 AnyList Integration")
+    
+    # Check Node.js availability
+    nodejs_available, nodejs_message = get_nodejs_status_message()
+    
+    if not nodejs_available:
+        st.warning(nodejs_message)
+        st.info(
+            "You can still manually add recipes using the Browse Recipes page.\n"
+            "All other features of the app will work normally."
+        )
+        return
     
     # Get current user
     # Use email as unique identifier for credential storage
