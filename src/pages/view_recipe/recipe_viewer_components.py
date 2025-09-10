@@ -142,32 +142,19 @@ def display_recipe_hero(recipe):
         # Badges section
         display_recipe_badges(recipe)
         
-        # Action buttons
-        col1, col2, col3 = st.columns([1, 1, 2])
-        
-        with col1:
-            if st.button(
-                "Add to This Week",
-                type="primary",
-                width="stretch",
-                icon=":material/add:",
-                help="Add this recipe to your weekly plan"
-            ):
-                if add_to_weekly_recipes(recipe):
-                    st.success("Added to weekly recipes!")
-                else:
-                    st.info("Already in weekly recipes")
-                st.rerun()
-        
-        with col2:
-            if st.button(
-                "Print Recipe",
-                type="secondary",
-                width="stretch",
-                icon=":material/print:",
-                help="Print-friendly view (opens new window)"
-            ):
-                st.info("Print functionality coming soon!")
+        # Action button
+        if st.button(
+            "Add to This Week",
+            type="primary",
+            width="stretch",
+            icon=":material/add:",
+            help="Add this recipe to your weekly plan"
+        ):
+            if add_to_weekly_recipes(recipe):
+                st.success("Added to weekly recipes!")
+            else:
+                st.info("Already in weekly recipes")
+            st.rerun()
 
 
 def display_recipe_badges(recipe):
