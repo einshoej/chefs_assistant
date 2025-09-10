@@ -89,9 +89,15 @@ def display_recipe_card(recipe, idx):
         image_url = photo_data.get('url')
     
     # Calculate total time
+    total_time = recipe.get('total_time', 0) or 0
     prep_time = recipe.get('prep_time', 0) or 0
     cook_time = recipe.get('cook_time', 0) or 0
-    total_minutes = (prep_time + cook_time) // 60 if (prep_time + cook_time) > 0 else 0
+    
+    # Use total_time if available, otherwise calculate from prep + cook time
+    if total_time > 0:
+        total_minutes = total_time // 60
+    else:
+        total_minutes = (prep_time + cook_time) // 60 if (prep_time + cook_time) > 0 else 0
     
     # Get categories from collections only
     collections = recipe.get('collections', [])
@@ -131,10 +137,17 @@ def display_recipe_card(recipe, idx):
         # Add time badge
         if total_minutes > 0:
             badges_markdown += f":blue-badge[🕐 {total_minutes} min] "
+        else:
+            badges_markdown += f":gray-badge[🕐 Time not set] "
         
         # Add category badge
         for category in collection_names:
             badges_markdown += f":gray-badge[🏷️ {category}] "
+        
+        # Add source badge
+        source = recipe.get('source', '').strip()
+        if source:
+            badges_markdown += f":green-badge[📚 {source}] "
         
         # Display badges
         if badges_markdown:
