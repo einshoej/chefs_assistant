@@ -175,7 +175,7 @@ class WeeklyRecipeManager:
     
     @classmethod
     def populate_week_with_random_recipes(cls, week_offset: int, force: bool = False) -> bool:
-        """Populate a week with random recipes based on user's meals_per_week preference
+        """Populate a week with seasonal recipes based on user's meals_per_week preference
         
         Args:
             week_offset: Number of weeks from current week
@@ -205,7 +205,7 @@ class WeeklyRecipeManager:
             logger.warning(f"No recipes available to populate week {week_offset}")
             return False
         
-        # Select random recipes, trying to avoid duplicates across weeks when possible
+        # Select recipes using seasonal weighting
         num_recipes_to_add = min(meals_per_week, len(all_recipes))
         
         # Get recipes already used in other weeks to try to avoid duplicates
@@ -216,28 +216,48 @@ class WeeklyRecipeManager:
                 for recipe in other_week_recipes:
                     used_recipe_names.add(recipe.get('name', ''))
         
-        # Try to select recipes not used in other weeks first
-        unused_recipes = [r for r in all_recipes if r.get('name', '') not in used_recipe_names]
-        
-        if len(unused_recipes) >= num_recipes_to_add:
-            # We have enough unused recipes
-            selected_recipes = random.sample(unused_recipes, num_recipes_to_add)
-        elif len(unused_recipes) > 0:
-            # Use all unused recipes and fill the rest from all recipes
-            selected_recipes = unused_recipes.copy()
-            remaining_needed = num_recipes_to_add - len(unused_recipes)
-            remaining_recipes = random.sample(all_recipes, remaining_needed)
-            selected_recipes.extend(remaining_recipes)
-        else:
-            # All recipes are used, just select randomly
-            selected_recipes = random.sample(all_recipes, num_recipes_to_add)
+        # Use seasonal recipe selector
+        try:
+            from src.utils.seasonal_recipe_selector import select_seasonal_recipes
+            selected_recipes = select_seasonal_recipes(
+                all_recipes, 
+                num_recipes_to_add,
+                used_recipe_names=used_recipe_names
+            )
+            
+            if not selected_recipes:
+                logger.warning(f"Seasonal selector returned no recipes for week {week_offset}")
+                return False
+                
+            logger.info(f"Populated week {week_offset} with {len(selected_recipes)} seasonal recipes")
+            
+        except Exception as e:
+            # Fall back to original random selection if seasonal selection fails
+            logger.warning(f"Seasonal selection failed, falling back to random selection: {e}")
+            
+            # Try to select recipes not used in other weeks first
+            unused_recipes = [r for r in all_recipes if r.get('name', '') not in used_recipe_names]
+            
+            if len(unused_recipes) >= num_recipes_to_add:
+                # We have enough unused recipes
+                selected_recipes = random.sample(unused_recipes, num_recipes_to_add)
+            elif len(unused_recipes) > 0:
+                # Use all unused recipes and fill the rest from all recipes
+                selected_recipes = unused_recipes.copy()
+                remaining_needed = num_recipes_to_add - len(unused_recipes)
+                remaining_recipes = random.sample(all_recipes, remaining_needed)
+                selected_recipes.extend(remaining_recipes)
+            else:
+                # All recipes are used, just select randomly
+                selected_recipes = random.sample(all_recipes, num_recipes_to_add)
+                
+            logger.info(f"Populated week {week_offset} with {len(selected_recipes)} random recipes (fallback)")
         
         # Add recipes to the week
         week_key = get_week_key(week_offset)
         st.session_state[cls.WEEKLY_PLANS_KEY][week_key] = selected_recipes.copy()
         cls.save_to_drive()
         
-        logger.info(f"Populated week {week_offset} with {num_recipes_to_add} random recipes")
         return True
     
     @classmethod
