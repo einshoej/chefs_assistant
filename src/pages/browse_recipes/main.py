@@ -196,5 +196,4 @@ def display_recipes(search_term: str = "", categories: list = None, sources: lis
                     display_recipe_card(recipe, global_idx)
 
 
-if __name__ == "__page__":
-    view_all_recipes()
+view_all_recipes()

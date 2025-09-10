@@ -163,10 +163,25 @@ def display_recipe_card(recipe, idx):
         else:
             st.badge("Not rated",color="gray",icon=":material/chef_hat:")
         
-        # Add recipe details expander
-        display_recipe_details(recipe, idx)
+        # Vertical button layout
+        # View recipe button (top)
+        if st.button(
+            "View Recipe",
+            key=f"view_recipe_{idx}",
+            width="stretch",
+            help="View full recipe details",
+            type="secondary",
+            icon=":material/visibility:"
+        ):
+            # Set the selected recipe and navigate
+            recipe_name = recipe.get('name', '')
+            if 'selected_recipe_name' not in st.session_state:
+                st.session_state.selected_recipe_name = recipe_name
+            else:
+                st.session_state.selected_recipe_name = recipe_name
+            st.switch_page("src/pages/view_recipe/main.py")
         
-        # Add to this week's recipes button
+        # Add to this week's recipes button (bottom)
         if st.button(
             "Add to This Week",
             key=f"add_recipe_{idx}",

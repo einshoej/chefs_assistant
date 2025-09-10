@@ -33,9 +33,6 @@ if str(project_root) not in sys.path:
 import streamlit as st
 from src.utils.auth import is_user_logged_in, show_login_page
 from src.utils.settings import initialize_user_settings
-from src.pages.this_week.main import main as this_week
-from src.pages.browse_recipes.main import view_all_recipes
-from src.pages.profile.main import profile
 
 # Configure page settings
 st.set_page_config(
@@ -55,9 +52,10 @@ def main():
         
         # Set up navigation pages with hierarchical structure
         pages = [            
-                st.Page(this_week, title="This Week", icon=":material/room_service:", url_path="this-week"),            
-                st.Page(view_all_recipes, title="View all recipes", icon=":material/search:", url_path="browse-recipes"),
-                st.Page(profile, title="Profile", icon=":material/person:", url_path="profile"),            
+                st.Page("src/pages/this_week/main.py", title="This Week", icon=":material/room_service:", url_path="this-week"),            
+                st.Page("src/pages/browse_recipes/main.py", title="View all recipes", icon=":material/search:", url_path="browse-recipes"),
+                st.Page("src/pages/view_recipe/main.py", title="Recipe Viewer", icon=":material/visibility:", url_path="view-recipe"),
+                st.Page("src/pages/profile/main.py", title="Profile", icon=":material/person:", url_path="profile"),            
         ]
         
         # Create navigation

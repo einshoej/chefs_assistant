@@ -92,5 +92,4 @@ def profile():
             st.logout()
 
 
-if __name__ == "__page__":
-    profile()
+profile()

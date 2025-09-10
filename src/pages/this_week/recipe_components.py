@@ -7,7 +7,7 @@ import requests
 from PIL import Image
 import io
 import numpy as np
-from .session_manager import WeeklyRecipeManager
+from src.pages.this_week.session_manager import WeeklyRecipeManager
 
 
 @st.cache_data
@@ -172,10 +172,25 @@ def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: i
         else:
             st.badge("Not rated",color="gray",icon=":material/chef_hat:")
         
-        # Add recipe details expander
-        display_recipe_details(recipe, idx)
+        # Vertical button layout
+        # View recipe button (top)
+        if st.button(
+            "View Recipe",
+            key=f"view_recipe_{week_offset}_{idx}",
+            width="stretch",
+            help="View full recipe details",
+            type="secondary",
+            icon=":material/visibility:"
+        ):
+            # Set the selected recipe and navigate
+            recipe_name = recipe.get('name', '')
+            if 'selected_recipe_name' not in st.session_state:
+                st.session_state.selected_recipe_name = recipe_name
+            else:
+                st.session_state.selected_recipe_name = recipe_name
+            st.switch_page("src/pages/view_recipe/main.py")
         
-        # Remove from this week's plan button
+        # Remove from this week's plan button (bottom)
         if st.button(
             "Remove from Plan",
             key=f"remove_recipe_{week_offset}_{idx}",
