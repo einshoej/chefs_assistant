@@ -14,7 +14,7 @@ from src.pages.this_week.session_manager import WeeklyRecipeManager
 def process_recipe_image(image_url, target_height=200):
     """
     Download and process recipe image to fixed dimensions with center cropping
-    Uses 16:9 aspect ratio for consistent appearance
+    Uses 16:9 aspect ratio for consistent appearance with robust retry logic
     
     Args:
         image_url: URL of the image to process
@@ -25,57 +25,93 @@ def process_recipe_image(image_url, target_height=200):
     """
     if not image_url:
         return None
-        
-    try:
-        # Download image
-        response = requests.get(image_url, timeout=10)
-        response.raise_for_status()
-        
-        # Open image with PIL
-        img = Image.open(io.BytesIO(response.content))
-        
-        # Convert to RGB if necessary (handles RGBA, etc.)
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        
-        # Calculate target dimensions (16:9 aspect ratio)
-        target_width = int(target_height * 16 / 9)  # 16:9 aspect ratio
-        
-        # Get original dimensions
-        original_width, original_height = img.size
-        original_aspect = original_width / original_height
-        target_aspect = target_width / target_height
-        
-        # Determine how to crop to target aspect ratio
-        if original_aspect > target_aspect:
-            # Image is wider than target - crop width
-            new_height = original_height
-            new_width = int(new_height * target_aspect)
-            left = (original_width - new_width) // 2
-            top = 0
-            right = left + new_width
-            bottom = original_height
-        else:
-            # Image is taller than target - crop height
-            new_width = original_width
-            new_height = int(new_width / target_aspect)
-            left = 0
-            top = (original_height - new_height) // 2
-            right = original_width
-            bottom = top + new_height
-        
-        # Crop image to target aspect ratio
-        img = img.crop((left, top, right, bottom))
-        
-        # Resize to final dimensions
-        processed_img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
-        
-        return np.array(processed_img)
-        
-    except (requests.RequestException, Image.UnidentifiedImageError, Exception) as e:
-        # Don't use st.error here as it might cause width parameter issues
-        print(f"Failed to process image: {str(e)}")
-        return None
+    
+    # Retry configuration
+    max_retries = 3
+    timeout = 15
+    backoff_factor = 1.0
+    
+    for attempt in range(max_retries):
+        try:
+            # Calculate timeout with backoff
+            current_timeout = timeout + (attempt * backoff_factor)
+            
+            # Download image with session for connection pooling
+            session = requests.Session()
+            session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            })
+            
+            response = session.get(
+                image_url, 
+                timeout=current_timeout,
+                stream=True  # Stream for large images
+            )
+            response.raise_for_status()
+            
+            # Open image with PIL
+            img = Image.open(io.BytesIO(response.content))
+            
+            # Convert to RGB if necessary (handles RGBA, etc.)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # Calculate target dimensions (16:9 aspect ratio)
+            target_width = int(target_height * 16 / 9)
+            
+            # Get original dimensions
+            original_width, original_height = img.size
+            original_aspect = original_width / original_height
+            target_aspect = target_width / target_height
+            
+            # Determine how to crop to target aspect ratio
+            if original_aspect > target_aspect:
+                # Image is wider than target - crop width
+                new_height = original_height
+                new_width = int(new_height * target_aspect)
+                left = (original_width - new_width) // 2
+                top = 0
+                right = left + new_width
+                bottom = original_height
+            else:
+                # Image is taller than target - crop height
+                new_width = original_width
+                new_height = int(new_width / target_aspect)
+                left = 0
+                top = (original_height - new_height) // 2
+                right = original_width
+                bottom = top + new_height
+            
+            # Crop image to target aspect ratio
+            img = img.crop((left, top, right, bottom))
+            
+            # Resize to final dimensions
+            processed_img = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
+            
+            return np.array(processed_img)
+            
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                continue
+            print(f"Image download timeout after {max_retries} attempts: {image_url}")
+            return None
+            
+        except requests.exceptions.ConnectionError as e:
+            if "Failed to resolve" in str(e) or "getaddrinfo failed" in str(e):
+                print(f"DNS resolution failed for image: {image_url}")
+                return None
+            elif attempt < max_retries - 1:
+                continue
+            print(f"Connection error after {max_retries} attempts: {str(e)}")
+            return None
+            
+        except (requests.RequestException, Image.UnidentifiedImageError, Exception) as e:
+            if attempt < max_retries - 1:
+                continue
+            print(f"Failed to process image after {max_retries} attempts: {str(e)}")
+            return None
+    
+    return None
 
 
 def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: int = 0) -> None:

@@ -14,6 +14,10 @@ def initialize_session_state():
     if 'selected_recipe_idx' not in st.session_state:
         st.session_state.selected_recipe_idx = 0
     
+    # Initialize recipe scaling state
+    if 'recipe_scale_factors' not in st.session_state:
+        st.session_state.recipe_scale_factors = {}
+    
     # Initialize recipe data if needed (reuse from browse_recipes)
     if 'default_recipes' not in st.session_state:
         st.session_state.default_recipes = []
@@ -103,6 +107,22 @@ def get_recipe_names():
     """Get list of all recipe names for selectbox"""
     recipes = get_all_recipes()
     return [recipe.get('name', f'Recipe {idx}') for idx, recipe in enumerate(recipes)]
+
+
+def get_recipe_scale_factor(recipe_name: str) -> float:
+    """Get the current scale factor for a recipe"""
+    if 'recipe_scale_factors' not in st.session_state:
+        st.session_state.recipe_scale_factors = {}
+    
+    return st.session_state.recipe_scale_factors.get(recipe_name, 1.0)
+
+
+def set_recipe_scale_factor(recipe_name: str, scale_factor: float):
+    """Set the scale factor for a recipe"""
+    if 'recipe_scale_factors' not in st.session_state:
+        st.session_state.recipe_scale_factors = {}
+    
+    st.session_state.recipe_scale_factors[recipe_name] = scale_factor
 
 
 def add_to_weekly_recipes(recipe):

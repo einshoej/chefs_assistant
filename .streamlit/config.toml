@@ -38,3 +38,8 @@ chartCategoricalColors = ["#FF6B35", "#F7931E", "#C5282F", "#8B4513", "#228B22",
 backgroundColor = "#FFF8F3"
 secondaryBackgroundColor = "#F0E6D6"
 primaryColor = "#1E40AF"
+
+[server]
+# Disable file watcher to prevent cross-drive path errors on Windows
+fileWatcherType = "none"
+runOnSave = false
