@@ -78,9 +78,4 @@ def display_full_recipe(recipe):
     st.markdown("")
     display_recipe_details(recipe)
     
-    # Footer with helpful info
-    st.divider()
-    st.caption("💡 Tip: Use the 'Add to This Week' button to include this recipe in your meal planning!")
-
-
 view_recipe()
