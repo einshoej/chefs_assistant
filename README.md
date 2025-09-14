@@ -46,7 +46,7 @@ chefs_assistant/
     ├── models/                       # Data models
     ├── utils/                        # Utilities
     │   ├── auth.py                  # Authentication helpers
-    │   └── google_auth.py           # Google Drive integration
+    │   └── google_drive_oauth.py    # Google Drive integration
     └── scripts/
         ├── setup/                    # Setup scripts
         └── tests/                    # Test scripts

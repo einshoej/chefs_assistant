@@ -6,7 +6,7 @@ import streamlit as st
 from typing import List, Dict, Any
 import logging
 import random
-from .week_utils import get_week_key
+from src.pages.this_week.week_utils import get_week_key
 
 logger = logging.getLogger(__name__)
 

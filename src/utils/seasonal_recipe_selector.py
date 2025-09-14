@@ -5,7 +5,7 @@ Seasonal recipe selection utility for weighted random recipe selection based on 
 import random
 from typing import List, Dict, Any, Tuple
 from datetime import date
-from .seasons import get_current_season, Season
+from src.utils.seasons import get_current_season, Season
 
 
 class SeasonalRecipeSelector:

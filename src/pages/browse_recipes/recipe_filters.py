@@ -2,6 +2,8 @@
 Recipe filtering functionality for browse recipes page
 """
 
+from src.config.categories import get_category_group, get_group_color
+
 
 def filter_recipes(recipes, search_term, categories, sources):
     """Filter recipes based on search criteria"""

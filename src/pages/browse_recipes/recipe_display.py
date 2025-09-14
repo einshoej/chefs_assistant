@@ -8,6 +8,7 @@ from PIL import Image
 import io
 import numpy as np
 from src.pages.browse_recipes.session_state import add_to_weekly_recipes
+from src.config.categories import get_category_group, get_group_color, get_group_icon
 
 
 @st.cache_data
@@ -142,7 +143,7 @@ def display_recipe_card(recipe, idx):
     # Build rating stars
     rating = recipe.get('rating', 0)
     if rating > 0:
-        stars = ':material/chef_hat:' * rating
+        stars = ':material/star:' * rating
     else:
         stars = None
     
@@ -176,9 +177,15 @@ def display_recipe_card(recipe, idx):
         else:
             badges_markdown += f":gray-badge[🕐 Time not set] "
         
-        # Add category badge
+        # Add category badges with group colors and icons
         for category in collection_names:
-            badges_markdown += f":gray-badge[🏷️ {category}] "
+            group_key, group_data = get_category_group(category)
+            if group_data:
+                color = group_data['color']
+                icon = group_data['icon']
+                badges_markdown += f":{color}-badge[{icon} {category}] "
+            else:
+                badges_markdown += f":gray-badge[🏷️ {category}] "
         
         # Add source badge
         source = recipe.get('source', '').strip()
@@ -197,7 +204,7 @@ def display_recipe_card(recipe, idx):
         if stars:
             st.markdown(stars)
         else:
-            st.badge("Not rated",color="gray",icon=":material/chef_hat:")
+            st.badge("Not rated",color="gray",icon=":material/star:")
         
         # Vertical button layout
         # View recipe button (top)

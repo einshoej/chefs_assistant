@@ -9,6 +9,7 @@ import io
 import numpy as np
 from src.pages.view_recipe.session_state import add_to_weekly_recipes, get_recipe_scale_factor, set_recipe_scale_factor
 from src.utils.recipe_scaling import get_scaling_options, format_scaled_quantity
+from src.config.categories import get_grouped_categories, get_category_group
 
 
 @st.cache_data
@@ -175,6 +176,10 @@ def display_recipe_hero(recipe):
         
         # Recipe title
         recipe_name = recipe.get('name', 'Unnamed Recipe')
+        
+        # Category group tabs
+        display_category_tabs(recipe)
+        
         st.title(recipe_name)
         
         # Badges section
@@ -201,6 +206,61 @@ def display_recipe_hero(recipe):
             st.rerun()
 
 
+def display_category_tabs(recipe):
+    """Display category badges grouped by category type"""
+    
+    # Get recipe categories
+    collections = recipe.get('collections', [])
+    recipe_categories = [c['name'] if isinstance(c, dict) else c for c in collections]
+    
+    if not recipe_categories:
+        return  # Don't show badges if no categories
+    
+    # Group categories by their category group
+    grouped_categories = {}
+    uncategorized = []
+    
+    for category in recipe_categories:
+        group_key, group_data = get_category_group(category)
+        if group_data:
+            if group_key not in grouped_categories:
+                grouped_categories[group_key] = {
+                    'data': group_data,
+                    'categories': []
+                }
+            grouped_categories[group_key]['categories'].append(category)
+        else:
+            uncategorized.append(category)
+    
+    # Build badges markdown, grouped by category type
+    badges_markdown = ""
+    
+    # Display grouped categories in a consistent order
+    group_order = ['meal_types', 'cuisines', 'main_ingredients', 'cooking_methods', 'dietary', 'seasons', 'other']
+    
+    for group_key in group_order:
+        if group_key in grouped_categories:
+            group_info = grouped_categories[group_key]
+            group_data = group_info['data']
+            categories = group_info['categories']
+            
+            color = group_data['color']
+            icon = group_data['icon']
+            
+            # Add all categories from this group
+            for category in categories:
+                badges_markdown += f":{color}-badge[{icon} {category}] "
+    
+    # Add uncategorized items at the end
+    for category in uncategorized:
+        badges_markdown += f":gray-badge[🏷️ {category}] "
+    
+    # Display all badges
+    if badges_markdown:
+        st.markdown(badges_markdown)
+        st.markdown("")  # Add spacing after badges
+
+
 def display_recipe_badges(recipe):
     """Display recipe badges with enhanced styling"""
     
@@ -222,8 +282,8 @@ def display_recipe_badges(recipe):
     # Build rating
     rating = recipe.get('rating', 0)
     
-    # Create badge columns
-    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    # Create badge columns (removed category badge - now shown above title)
+    col1, col2, col3 = st.columns([1, 1, 1])
     
     with col1:
         # Time badge
@@ -235,21 +295,12 @@ def display_recipe_badges(recipe):
     with col2:
         # Rating badge
         if rating > 0:
-            stars = ":material/chef_hat:" * rating
+            stars = ":material/star:" * rating
             st.markdown(f":orange-badge[{stars}]")
         else:
-            st.markdown(":gray-badge[:material/chef_hat: Not rated]")
+            st.markdown(":gray-badge[:material/star: Not rated]")
     
     with col3:
-        # Category badge (first one if multiple)
-        if collection_names:
-            category = collection_names[0]  # Show first category
-            extra_text = f" +{len(collection_names)-1}" if len(collection_names) > 1 else ""
-            st.markdown(f":green-badge[🏷️ {category}{extra_text}]")
-        else:
-            st.markdown(":gray-badge[🏷️ Uncategorized]")
-    
-    with col4:
         # Source badge
         source = recipe.get('source', '').strip()
         if source:
@@ -326,7 +377,7 @@ def is_ingredient_heading(ingredient):
 
 
 def display_ingredients_section(recipe):
-    """Display ingredients in a 3-column layout with headings properly formatted"""
+    """Display ingredients in a 2-column layout with comments below items in italics"""
     
     ingredients = recipe.get('ingredients', [])
     recipe_name = recipe.get('name', 'Unnamed Recipe')
@@ -350,12 +401,12 @@ def display_ingredients_section(recipe):
 
 
 def display_ingredient_row(ingredient, scale_factor=1.0):
-    """Display a single ingredient in a 3-column row format"""
+    """Display a single ingredient in a 2-column row format with comments below items in italics"""
     if isinstance(ingredient, dict):
         quantity = ingredient.get('quantity', '').strip()
         name = ingredient.get('name', ingredient.get('rawText', '')).strip()
         note = ingredient.get('note', '').strip()
-        
+
         # Check if this is a heading
         if is_ingredient_heading(ingredient):
             # Display heading with emphasis and no quantity/note
@@ -367,24 +418,24 @@ def display_ingredient_row(ingredient, scale_factor=1.0):
                 scaled_quantity = format_scaled_quantity(quantity, scale_factor)
             else:
                 scaled_quantity = quantity
-            
-            # Display regular ingredient in 3 columns
-            col1, col2, col3 = st.columns([1, 2, 2])
+
+            # Display regular ingredient in 2 columns
+            col1, col2 = st.columns([1, 3])
             with col1:
                 st.markdown(scaled_quantity if scaled_quantity else "")
             with col2:
+                # Display item name
                 st.markdown(name if name else "")
-            with col3:
-                st.markdown(note if note else "")
+                # Display comment below in italics if it exists
+                if note:
+                    st.markdown(f"*{note}*")
     else:
         # Plain string format - treat as ingredient name
-        col1, col2, col3 = st.columns([1, 2, 2])
+        col1, col2 = st.columns([1, 3])
         with col1:
             st.markdown("")
         with col2:
             st.markdown(f"{ingredient}")
-        with col3:
-            st.markdown("")
 
 
 def display_instructions_section(recipe):

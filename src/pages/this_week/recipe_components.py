@@ -151,7 +151,7 @@ def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: i
     # Build rating stars
     rating = recipe.get('rating', 0)
     if rating > 0:
-        stars = ':material/chef_hat:' * rating
+        stars = ':material/star:' * rating
     else:
         stars = None
     
@@ -206,7 +206,7 @@ def display_recipe_card(recipe: dict, meal_number: int, idx: int, week_offset: i
         if stars:
             st.markdown(stars)
         else:
-            st.badge("Not rated",color="gray",icon=":material/chef_hat:")
+            st.badge("Not rated",color="gray",icon=":material/star:")
         
         # Vertical button layout
         # View recipe button (top)

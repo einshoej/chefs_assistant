@@ -73,9 +73,9 @@ def view_all_recipes():
     with col2:
         # Get available categories from all recipes
         available_categories = get_all_categories(all_recipes)
-        
+
         selected_categories = st.multiselect(
-            "Categories", 
+            "Categories",
             options=available_categories,
             default=[],
             key="categories",

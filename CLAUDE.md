@@ -78,7 +78,7 @@ Authentication utilities in `src/utils/auth.py` handle login state and user info
 5. **Google Drive Storage**: Optional cloud persistence for recipes and meal plans
    - Automatic save when meal plans modified
    - Automatic load on app startup if Drive is connected
-   - Separate OAuth flow for Drive API access (`src/utils/google_auth.py`)
+   - Separate OAuth flow for Drive API access (`src/utils/google_drive_oauth.py`)
 
 ## Page Structure
 
