@@ -9,6 +9,8 @@ import io
 import numpy as np
 from src.pages.browse_recipes.session_state import add_to_weekly_recipes
 from src.config.categories import get_category_group, get_group_color, get_group_icon
+from src.models.recipe import Recipe
+from src.components.price_estimator import display_budget_badge
 
 
 @st.cache_data
@@ -117,38 +119,47 @@ def process_recipe_image(image_url, target_height=200):
 
 def display_recipe_card(recipe, idx):
     """Display a compact recipe card using Streamlit native components with uniform height"""
-    
-    # Get recipe data
-    image_url = recipe.get('image')
-    photo_data = recipe.get('photo', {})
-    
-    if not image_url and photo_data.get('hasPhoto'):
-        image_url = photo_data.get('url')
-    
-    # Calculate total time
-    total_time = recipe.get('total_time', 0) or 0
-    prep_time = recipe.get('prep_time', 0) or 0
-    cook_time = recipe.get('cook_time', 0) or 0
-    
-    # Use total_time if available, otherwise calculate from prep + cook time
-    if total_time > 0:
-        total_minutes = total_time // 60
+
+    # Handle both Recipe objects and legacy dictionaries
+    if isinstance(recipe, Recipe):
+        # Use Recipe object methods
+        image_url = recipe.photos[0].url if recipe.photos else None
+        total_minutes = recipe.get_total_time_minutes()
+        collection_names = recipe.categories + [s.value for s in recipe.seasons]
+        rating = recipe.rating
+        recipe_name = recipe.get_name()
     else:
-        total_minutes = (prep_time + cook_time) // 60 if (prep_time + cook_time) > 0 else 0
-    
-    # Get categories from collections only
-    collections = recipe.get('collections', [])
-    collection_names = [c['name'] if isinstance(c, dict) else c for c in collections]
-    
+        # Legacy dictionary format
+        image_url = recipe.get('image')
+        photo_data = recipe.get('photo', {})
+
+        if not image_url and photo_data.get('hasPhoto'):
+            image_url = photo_data.get('url')
+
+        # Calculate total time
+        total_time = recipe.get('total_time', 0) or 0
+        prep_time = recipe.get('prep_time', 0) or 0
+        cook_time = recipe.get('cook_time', 0) or 0
+
+        # Use total_time if available, otherwise calculate from prep + cook time
+        if total_time > 0:
+            total_minutes = total_time // 60
+        else:
+            total_minutes = (prep_time + cook_time) // 60 if (prep_time + cook_time) > 0 else 0
+
+        # Get categories from collections only
+        collections = recipe.get('collections', [])
+        collection_names = [c['name'] if isinstance(c, dict) else c for c in collections]
+        rating = recipe.get('rating', 0)
+        recipe_name = recipe.get('name', 'Unnamed Recipe')
+
     # Build rating stars
-    rating = recipe.get('rating', 0)
     if rating > 0:
         stars = ':material/star:' * rating
     else:
         stars = None
-    
+
     # Recipe name (truncate if too long)
-    recipe_name = recipe.get('name', 'Unnamed Recipe')
     if len(recipe_name) > 50:
         recipe_name = recipe_name[:47] + "..."
     
@@ -188,10 +199,22 @@ def display_recipe_card(recipe, idx):
                 badges_markdown += f":gray-badge[🏷️ {category}] "
         
         # Add source badge
-        source = recipe.get('source', '').strip()
+        if isinstance(recipe, Recipe):
+            source = recipe.source.strip()
+        else:
+            source = recipe.get('source', '').strip()
+
         if source:
             badges_markdown += f":green-badge[📚 {source}] "
-        
+
+        # Add price badge for Recipe objects
+        if isinstance(recipe, Recipe):
+            cost_per_serving = recipe.get_cost_per_serving()
+            if cost_per_serving > 0:
+                price_badge = display_budget_badge(cost_per_serving)
+                if price_badge:
+                    badges_markdown += price_badge
+
         # Display badges
         if badges_markdown:
             st.markdown(badges_markdown)
@@ -217,11 +240,12 @@ def display_recipe_card(recipe, idx):
             icon=":material/visibility:"
         ):
             # Set the selected recipe and navigate
-            recipe_name = recipe.get('name', '')
-            if 'selected_recipe_name' not in st.session_state:
-                st.session_state.selected_recipe_name = recipe_name
+            if isinstance(recipe, Recipe):
+                recipe_name = recipe.get_name()
             else:
-                st.session_state.selected_recipe_name = recipe_name
+                recipe_name = recipe.get('name', '')
+
+            st.session_state.selected_recipe_name = recipe_name
             st.switch_page("src/pages/view_recipe/main.py")
         
         # Add to this week's recipes button (bottom)
@@ -240,22 +264,35 @@ def display_recipe_card(recipe, idx):
 
 def display_recipe_details(recipe, idx):
     """Display full recipe details in an expander"""
-    prep_steps = recipe.get('preparation_steps', [])
-    ingredients = recipe.get('ingredients', [])
-    
+
+    # Handle both Recipe objects and legacy dictionaries
+    if isinstance(recipe, Recipe):
+        prep_steps = [step.get_instruction() for step in recipe.preparation_steps]
+        ingredients_list = []
+        for ing in recipe.recipe_ingredients:
+            ingredients_list.append({
+                'name': ing.get_ingredient_name(),
+                'quantity': ing.quantity,
+                'unit': ing.unit,
+                'display': ing.get_display_text()
+            })
+    else:
+        prep_steps = recipe.get('preparation_steps', [])
+        ingredients = recipe.get('ingredients', [])
+
+        # Convert ingredients to a consistent format
+        if isinstance(ingredients, list):
+            ingredients_list = ingredients
+        else:
+            # Old dict format
+            ingredients_list = [{'name': k, 'quantity': v} for k, v in ingredients.items()]
+
     # Always show the expander, even if no detailed data is available
     with st.expander("View Full Recipe Details"):
         # Full ingredients list
-        if ingredients:
+        if ingredients_list:
             st.markdown("### Ingredients")
             cols_ing = st.columns(2)
-            
-            # Convert ingredients to a consistent format
-            if isinstance(ingredients, list):
-                ingredients_list = ingredients
-            else:
-                # Old dict format
-                ingredients_list = [{'name': k, 'quantity': v} for k, v in ingredients.items()]
             
             half = len(ingredients_list) // 2 + len(ingredients_list) % 2
             

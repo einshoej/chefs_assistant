@@ -7,6 +7,8 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime
+from src.models.recipe import Recipe
+from src.models.ingredient import Ingredient
 
 logger = logging.getLogger(__name__)
 
@@ -16,38 +18,139 @@ def get_default_recipes_file() -> Path:
     return Path(__file__).parent / "default_recipes.json"
 
 
-def load_default_recipes() -> List[Dict]:
-    """Load default recipes from the exported JSON file"""
+def get_migrated_recipes_file() -> Path:
+    """Get the path to the migrated recipes JSON file"""
+    return Path(__file__).parent / "migrated_recipes.json"
+
+
+def get_ingredient_library_file() -> Path:
+    """Get the path to the ingredient library JSON file"""
+    return Path(__file__).parent / "ingredient_library.json"
+
+
+def load_ingredient_library() -> Dict[str, Ingredient]:
+    """Load the ingredient library"""
+    ingredient_file = get_ingredient_library_file()
+
+    if not ingredient_file.exists():
+        logger.info("No ingredient library file found")
+        return {}
+
+    try:
+        with open(ingredient_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        ingredients_data = data.get('ingredients', {})
+        ingredient_library = {}
+
+        for ingredient_id, ingredient_dict in ingredients_data.items():
+            try:
+                ingredient = Ingredient.from_dict(ingredient_dict)
+                ingredient_library[ingredient_id] = ingredient
+            except Exception as e:
+                logger.error(f"Failed to load ingredient {ingredient_id}: {e}")
+                continue
+
+        logger.info(f"Loaded {len(ingredient_library)} ingredients into library")
+        return ingredient_library
+
+    except Exception as e:
+        logger.error(f"Error loading ingredient library: {e}")
+        return {}
+
+
+def load_default_recipes() -> List[Recipe]:
+    """Load default recipes from the migrated Recipe objects file"""
+    # First try to load migrated recipes
+    migrated_file = get_migrated_recipes_file()
+
+    if migrated_file.exists():
+        return load_migrated_recipes()
+
+    # Fall back to old dictionary format if migrated file doesn't exist
+    logger.warning("Migrated recipes file not found, falling back to dictionary format")
+    return load_legacy_recipes()
+
+
+def load_migrated_recipes() -> List[Recipe]:
+    """Load recipes from the migrated Recipe class format"""
+    migrated_file = get_migrated_recipes_file()
+
+    if not migrated_file.exists():
+        logger.info("No migrated recipes file found")
+        return []
+
+    try:
+        with open(migrated_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        recipes_data = data.get('recipes', [])
+        export_info = data.get('export_info', {})
+
+        # Load ingredient library
+        ingredient_library = load_ingredient_library()
+
+        # Convert dictionaries back to Recipe objects
+        recipes = []
+        for recipe_dict in recipes_data:
+            try:
+                recipe = Recipe.from_dict(recipe_dict)
+                # Link ingredients to library
+                recipe.load_ingredients(ingredient_library)
+                recipes.append(recipe)
+            except Exception as e:
+                logger.error(f"Failed to load recipe {recipe_dict.get('names', {}).get('no', 'unknown')}: {e}")
+                continue
+
+        # Log information about loaded recipes
+        if export_info:
+            exported_at = export_info.get('exported_at', 'Unknown')
+            migration_method = export_info.get('migration_method', 'Unknown')
+            total_recipes = export_info.get('total_recipes', len(recipes))
+
+            logger.info(f"Loaded {len(recipes)} migrated Recipe objects (originally {total_recipes}) using {migration_method}")
+        else:
+            logger.info(f"Loaded {len(recipes)} migrated Recipe objects")
+
+        return recipes
+
+    except Exception as e:
+        logger.error(f"Error loading migrated recipes: {e}")
+        return []
+
+
+def load_legacy_recipes() -> List[Dict]:
+    """Load recipes from the legacy dictionary format (for backward compatibility)"""
     recipes_file = get_default_recipes_file()
-    
+
     if not recipes_file.exists():
         logger.info("No default recipes file found")
         return []
-    
+
     try:
         with open(recipes_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        
+
         recipes = data.get('recipes', [])
         export_info = data.get('export_info', {})
-        
+
         # Log information about loaded recipes
         if export_info:
             exported_at = export_info.get('exported_at', 'Unknown')
             exported_from = export_info.get('exported_from', 'Unknown')
             total_recipes = export_info.get('total_recipes', len(recipes))
-            
-            logger.info(f"Loaded {total_recipes} default recipes exported from {exported_from} at {exported_at}")
+
+            logger.info(f"Loaded {total_recipes} default recipes (legacy format) exported from {exported_from} at {exported_at}")
         else:
-            logger.info(f"Loaded {len(recipes)} default recipes")
-        
+            logger.info(f"Loaded {len(recipes)} default recipes (legacy format)")
+
         # Add metadata to each recipe to indicate it's a default recipe
         for recipe in recipes:
             recipe['is_default_recipe'] = True
             recipe['recipe_type'] = 'default_export'
-        
+
         return recipes
-        
+
     except Exception as e:
         logger.error(f"Error loading default recipes: {e}")
         return []

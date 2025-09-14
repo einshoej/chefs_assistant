@@ -16,6 +16,9 @@ from src.pages.view_recipe.recipe_viewer_components import (
     display_instructions_section,
     display_recipe_details
 )
+from src.components.nutrition_card import display_nutrition_card, display_daily_values
+from src.components.price_estimator import display_price_card, display_price_breakdown
+from src.models.recipe import Recipe
 
 
 def view_recipe():
@@ -73,7 +76,29 @@ def display_full_recipe(recipe):
     
     # Instructions section (full width)
     display_instructions_section(recipe)
-    
+
+    # Add spacing
+    st.markdown("")
+
+    # Nutrition and Price sections (only for Recipe objects)
+    if isinstance(recipe, Recipe):
+        # Use tabs for better organization
+        tab1, tab2 = st.tabs(["🍽️ Næring", "💰 Kostnad"])
+
+        with tab1:
+            display_nutrition_card(recipe)
+            st.markdown("")
+
+            # Daily values
+            nutrition = recipe.calculate_nutrition_per_serving()
+            if nutrition:
+                display_daily_values(nutrition)
+
+        with tab2:
+            display_price_card(recipe)
+            st.markdown("")
+            display_price_breakdown(recipe)
+
     # Additional details section (full width)
     st.markdown("")
     display_recipe_details(recipe)
